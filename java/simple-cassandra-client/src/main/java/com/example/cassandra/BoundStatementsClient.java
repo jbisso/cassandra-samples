@@ -29,7 +29,6 @@ public class BoundStatementsClient extends SimpleClient {
             tags ) );
       tags = new HashSet<String>();
       tags.add("1996");
-      tags.add("1996");
       tags.add("birds");
       getSession().execute(boundStatement.bind(
             UUID.fromString("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
@@ -38,9 +37,8 @@ public class BoundStatementsClient extends SimpleClient {
             "Willi Ostermann",
             tags) );
       tags = new HashSet<String>();
-      tags.add("1996");
-      tags.add("1996");
-      tags.add("birds");
+      tags.add("1970");
+      tags.add("soundtrack");
       getSession().execute(boundStatement.bind(
             UUID.fromString("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25"),
             "Memo From Turner",
