@@ -8,7 +8,7 @@ using Cassandra;
 
 namespace CassandraExamples
 {
-    class SimpleCassandraClient
+    public class SimpleCassandraClient
     {
         public Session session { get; private set; }
 
@@ -145,8 +145,8 @@ namespace CassandraExamples
                 "SELECT * FROM simplex.songs " +
                 "WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;");
       
-            Console.WriteLine( String.Format("{0, -30}\t{1, -20}\t{2, -20}", "title", "album", "artist", "tags");
-            Console.WriteLine("-------------------------------+-----------------------+--------------------+-------------------------------"));
+            Console.WriteLine( String.Format("{0, -30}\t{1, -20}\t{2, -20}", "title", "album", "artist", "tags") );
+            Console.WriteLine("-------------------------------+-----------------------+--------------------+-------------------------------");
             foreach (CqlRow row in results.GetRows()) {
                 Console.WriteLine( String.Format("{0, -30}\t{1, -20}\t{2, -20}", 
                     row.GetValue<String>("title"), row.GetValue<String>("album"), 
@@ -165,6 +165,7 @@ namespace CassandraExamples
             session.Dispose();
         }
 
+        /*
         static void Main(string[] args)
         {
             SimpleCassandraClient client = new SimpleCassandraClient();
@@ -177,5 +178,6 @@ namespace CassandraExamples
             client.DropSchema("simplex");
             client.Close();
         }
+         */
     }
 }
