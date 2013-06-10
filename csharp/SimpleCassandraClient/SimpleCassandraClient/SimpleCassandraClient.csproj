@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\SimpleCassandraClient.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,8 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cassandra">
-      <HintPath>..\..\..\repos\datastax\csharp-driver\Cassandra\obj\Release\Cassandra.dll</HintPath>
+    <Reference Include="Cassandra, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dcbfab9f1e5ea9a7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\datastax\csharp-driver\Cassandra\obj\Release\Cassandra.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundStatementsClient.cs" />
+    <Compile Include="AsynchronousExample.cs" />
+    <Compile Include="SimpleClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleCassandraClient.cs" />
   </ItemGroup>

@@ -8,13 +8,13 @@ using Cassandra;
 
 namespace CassandraExamples
 {
-    public class BoundStatementsClient : SimpleCassandraClient
+    public class BoundStatementsClient : SimpleClient
     {
         public BoundStatementsClient()
         {
         }
 
-        public void LoadData()
+        public new void LoadData()
         {
             PreparedStatement statement = session.Prepare(
                   "INSERT INTO simplex.songs " +
@@ -77,6 +77,7 @@ namespace CassandraExamples
                   "Mick Jager"));
         }
 
+        
         static void Main(string[] args)
         {
             BoundStatementsClient client = new BoundStatementsClient();
@@ -89,5 +90,6 @@ namespace CassandraExamples
             client.DropSchema("simplex");
             client.Close();
         }
+        
     }
 }
