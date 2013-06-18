@@ -200,7 +200,6 @@ public class SimpleClient {
       client.connect("127.0.0.1");
       client.createSchema();
       client.loadData();
-      //client.loadDataUsingBoundStatements();
       client.querySchema();
       client.updateSchema();
       client.dropSchema("simplex");
