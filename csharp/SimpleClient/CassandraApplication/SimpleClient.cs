@@ -22,11 +22,12 @@ namespace CassandraApplication
         {
             _cluster = Cluster.Builder()
                 .AddContactPoint(node).Build();
-            _session = _cluster.Connect();
             Metadata metadata = _cluster.Metadata;
-            
-            Console.WriteLine("Connected to cluster: " 
+            /*
+            Console.WriteLine("Connected to cluster: "
                 + metadata.GetClusterName().ToString());
+             */
+            _session = _cluster.Connect();
              
         }
 
