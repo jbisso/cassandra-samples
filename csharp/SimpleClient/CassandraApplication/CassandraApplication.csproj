@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="AsynchronousClient.cs" />
     <Compile Include="BoundStatementsClient.cs" />
+    <Compile Include="EmbeddedCqlClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleClient.cs" />

@@ -22,8 +22,8 @@ namespace CassandraApplication
             Pause();
             client.DropSchema("simplex");
             client.Close();
-             */
-            AsynchronousClient client = new AsynchronousClient();
+
+             * AsynchronousClient client = new AsynchronousClient();
             client.Connect("127.0.0.1");
             client.CreateSchema();
             client.LoadData();
@@ -36,6 +36,11 @@ namespace CassandraApplication
             Pause();
             client.DropSchema("simplex");
             client.Close();
+             */
+
+            EmbeddedCqlClient client = new EmbeddedCqlClient();
+            client.doArrayQuery();
+            Pause();
         }
 
         public static void Pause()
