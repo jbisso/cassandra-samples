@@ -121,7 +121,7 @@ namespace CassandraApplication
         {
             _session.Execute(
                 "UPDATE simplex.songs " +
-                "SET tags = tags + { 'entre-deux-guerre' } " +
+                "SET tags = tags + { 'entre-deux-guerres' } " +
                 "WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;");
 
             CqlRowSet results = _session.Execute(

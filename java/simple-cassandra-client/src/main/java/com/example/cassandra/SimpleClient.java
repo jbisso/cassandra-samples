@@ -144,7 +144,7 @@ public class SimpleClient {
    public void updateSchema() {
       session.execute(
             "UPDATE simplex.songs " +
-            "SET tags = tags + { 'entre-deux-guerre' } " +
+            "SET tags = tags + { 'entre-deux-guerres' } " +
             "WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;");
       
       ResultSet results = session.execute(
