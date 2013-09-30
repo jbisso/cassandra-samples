@@ -23,7 +23,9 @@ public class SimpleClient {
     */
    public void connect(String node) {
       Cluster cluster = Cluster.builder()
-            .addContactPoint(node).build();
+            .addContactPoint(node)
+            // .withSSL() // uncomment if using client to node encryption
+            .build();
       Metadata metadata = cluster.getMetadata();
       System.out.printf("Connected to cluster: %s\n", 
             metadata.getClusterName());
@@ -70,17 +72,17 @@ public class SimpleClient {
                 "756716f7-2e54-4715-9f00-91dcbea6cf50," +
                 "'La Petite Tonkinoise'," +
                 "'Bye Bye Blackbird'," +
-                "'Joséphine Baker'," +
+                "'Jos√©phine Baker'," +
                 "{'jazz', '2013'})" +
             ";");
       session.execute(
             "INSERT INTO simplex.songs (id, title, album, artist, tags) " +
             "VALUES (" +
                 "f6071e72-48ec-4fcb-bf3e-379c8a696488," +
-                "'Die Mösch'," +
+                "'Die M√∂sch'," +
                 "'In Gold'," +
                 "'Willi Ostermann'," +
-                "{'kölsch', '1996', 'birds'}" +
+                "{'k√∂lsch', '1996', 'birds'}" +
             ");");
       session.execute(
             "INSERT INTO simplex.songs (id, title, album, artist, tags) " +
@@ -98,14 +100,14 @@ public class SimpleClient {
                 "756716f7-2e54-4715-9f00-91dcbea6cf50," +
                 "'La Petite Tonkinoise'," +
                 "'Bye Bye Blackbird'," +
-                "'Joséphine Baker'" +
+                "'Jos√©phine Baker'" +
             ");");
       session.execute(
             "INSERT INTO simplex.playlists (id, song_id, title, album, artist) " +
             "VALUES (" +
                 "2cc9ccb7-6221-4ccb-8387-f22b6a1b354d," +
                 "f6071e72-48ec-4fcb-bf3e-379c8a696488," +
-                "'Die Mösch'," +
+                "'Die M√∂sch'," +
                 "'In Gold'," +
                 "'Willi Ostermann'" +
             ");");
