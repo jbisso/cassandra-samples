@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from cassandra.cluster import Cluster
@@ -5,19 +6,24 @@ from cassandra.query import PreparedStatement
 from uuid import UUID
 import logging
 
+log = logging.getLogger()
+log.setLevel('INFO')
+
 class SimpleClient:
     """
     A simple Cassandra client illustrating how to use the DataStax 
     Python driver.
     """
-
     session = None
 
     def connect(self, nodes):
         cluster = Cluster(nodes)
         metadata = cluster.metadata
         self.session = cluster.connect()
-        print 'Connected to cluster: ', metadata.cluster_name
+        log.info('Connected to cluster: ' + metadata.cluster_name)
+        for host in metadata.all_hosts():
+            log.info('Datacenter: %s; Host: %s; Rack: %s',
+                host.datacenter, host.address, host.rack)
 
     def create_schema(self):
         self.session.execute("""
@@ -44,7 +50,7 @@ class SimpleClient:
                 PRIMARY KEY (id, title, album, artist)
             );
         """)
-        print 'Simplex keyspace and schema created.'
+        log.info('Simplex keyspace and schema created.')
 
     def load_data(self):
         self.session.execute("""
@@ -53,7 +59,7 @@ class SimpleClient:
                 756716f7-2e54-4715-9f00-91dcbea6cf50,
                 'La Petite Tonkinoise',
                 'Bye Bye Blackbird',
-                'Joséphine Baker',
+                'Jos√©phine Baker',
                 {'jazz', '2013'}
             );
         """)
@@ -61,10 +67,10 @@ class SimpleClient:
             INSERT INTO simplex.songs (id, title, album, artist, tags)
             VALUES (
                 f6071e72-48ec-4fcb-bf3e-379c8a696488,
-                'Die Mösch',
+                'Die M√∂sch',
                 'In Gold',
                 'Willi Ostermann',
-                {'kölsch', '1996', 'birds'}
+                {'k√∂lsch', '1996', 'birds'}
             );
         """)
         self.session.execute("""
@@ -84,7 +90,7 @@ class SimpleClient:
                 756716f7-2e54-4715-9f00-91dcbea6cf50,
                 'La Petite Tonkinoise',
                 'Bye Bye Blackbird',
-                'Joséphine Baker'
+                'Jos√©phine Baker'
             );
         """)
         self.session.execute("""
@@ -92,7 +98,7 @@ class SimpleClient:
             VALUES (
                 2cc9ccb7-6221-4ccb-8387-f22b6a1b354d,
                 f6071e72-48ec-4fcb-bf3e-379c8a696488,
-                'Die Mösch',
+                'Die M√∂sch',
                 'In Gold',
                 'Willi Ostermann'
             );
@@ -107,7 +113,7 @@ class SimpleClient:
                 'Mick Jager'
             );
         """)
-        print 'Data loaded.'
+        log.info('Data loaded.')
 
     def query_schema(self):
         results = self.session.execute("""
@@ -119,7 +125,7 @@ class SimpleClient:
                 "-------------------------------+-----------------------+--------------------")
         for row in results:
             print "%-30s\t%-20s\t%-20s" % (row.title, row.album, row.artist)
-        print 'Schema queried.'
+        log.info('Schema queried.')
 
     def update_schema(self):
         self.session.execute("""
@@ -137,20 +143,20 @@ class SimpleClient:
         for row in results:
             print "%-30s\t%-20s\t%-20s%-30s" % \
                 (row.title, row.album, row.artist, row.tags)
-        print 'Schema updated.'
+        log.info( 'Schema updated.')
 
     def drop_schema(self, keyspace):
         self.session.execute("DROP keyspace " + keyspace + ";")
-        print "Dropped keyspace " + keyspace
+        log.info("Dropped keyspace " + keyspace)
 
     def close(self):
         self.session.cluster.shutdown()
         self.session.shutdown()
-        print 'Connection closed.'
-    
+        log.info('Connection closed.')
+ 
     def pause(self):
         wait = raw_input("Pausing execution, <CR> to continue.")
-        print("Resuming execution.")
+        log.info("Resuming execution.")
 
 class BoundStatementsClient(SimpleClient):
     """
@@ -160,7 +166,7 @@ class BoundStatementsClient(SimpleClient):
 
     def load_data(self):
         """
-        Override SimpleClient's method to use bound statements.
+        Override SimpleClient's function to use bound statements.
         """
         bound_statement = self.session.prepare("""
             INSERT INTO simplex.songs
@@ -172,13 +178,13 @@ class BoundStatementsClient(SimpleClient):
             UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
-            "Joséphine Baker",
+            "Jos√©phine Baker",
             tags ))
         )
         tags = set(['1996', 'birds'])
         self.session.execute(bound_statement.bind((
             UUID("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die Mösch",
+            "Die M√∂sch",
             "In Gold'", 
             "Willi Ostermann",
             tags ))
@@ -196,32 +202,33 @@ class BoundStatementsClient(SimpleClient):
             (id, song_id, title, album, artist)
             VALUES (?, ?, ?, ?, ?);
         """)
-        getSession().execute(bound_statement.bind((
+        self.session.execute(bound_statement.bind((
             UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
-            "Joséphine Baker"))
+            "Jos√©phine Baker"))
         )
-        getSession().execute(bound_statement.bind((
+        self.session.execute(bound_statement.bind((
             UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die Mösch",
+            "Die M√∂sch",
             "In Gold",
             "Willi Ostermann"))
         )
-        getSession().execute(bound_statement.bind((
+        self.session.execute(bound_statement.bind((
             UUID("3fd2bedf-a8c8-455a-a462-0cd3a4353c54"),
             UUID("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25"),
             "Memo From Turner",
             "Performance",
             "Mick Jager"))
         )
+        log.info('BoundStatementsClient: Schema loaded.')
 
 # callback functions for the AsynchronousExample class
 
 def print_errors(errors):
-    print errors
+    log.error(errors)
     
 def print_results(results):
     print "%-30s\t%-20s\t%-20s%-30s\n%s" % \
@@ -250,7 +257,7 @@ def main():
     client.query_schema()
     client.pause()
     client.update_schema()
-    client.drop_schema("simplex")
+    client.drop_schema('simplex')
     client.close()
 
 if __name__ == "__main__":

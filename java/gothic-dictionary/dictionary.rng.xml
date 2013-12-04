@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar 
+	xmlns="http://relaxng.org/ns/structure/1.0" 
+	xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" 
+	xmlns:db="http://www.wulfila.be/archive/2006/DB/dictionary" 
+	datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+	<a:documentation>
+	Preliminary, ad hoc schema for encoding Streitberg's Gotisch-Griechisch-Deutsches Wörterbuch (1910). 
+It is an intermediate format, meant to bring the existing plain text data one step closer to TEI encoding (or 
+another standard format). Elements and attributes in the xmlns:db-namespace belong to the database 
+from which the file was initially generated. They are not part of the dictionary text and may be ignored. 
+
+	See [ http://www.wulfila.be/lib/streitberg/1910/#XML ] for more information.
+		
+	TDH, November 2006.
+	</a:documentation>
+
+	<start>
+		<element name="dictionary">
+			<a:documentation>Root element for the dictionary.</a:documentation>
+			<ref name="Common.attrib"/>
+			<optional>
+				<attribute name="db:generated">
+					<a:documentation>Timestamp indicating when the file was generated from the database.</a:documentation>
+				</attribute>
+			</optional>
+			<ref name="meta" />
+			<oneOrMore>
+				<ref name="entry"/>
+			</oneOrMore>
+		</element>
+	</start>
+	
+	<define name="meta">
+		<element name="meta">
+			<a:documentation>Very simple container for some basic information on the file (the final version would have a TEI header).</a:documentation>
+			<ref name="Common.attrib"/>
+			<attribute name="schema"><data type="anyURI" /></attribute>
+			<oneOrMore>
+				<element name="p">
+					<ref name="Common.attrib"/>
+					<mixed>
+						<zeroOrMore>
+							<element name="a">
+								<ref name="Common.attrib"/>
+								<attribute name="href"><data type="anyURI" /></attribute>
+								<text />
+							</element>
+						</zeroOrMore>
+					</mixed>
+				</element>
+			</oneOrMore>
+		</element>
+	</define>
+
+	<define name="entry">
+		<element name="entry">
+			<a:documentation>An entry in the dictionary</a:documentation>
+			<ref name="entry.attlist"/>
+			<ref name="form"/>
+			<optional><ref name="formAlternative"/></optional>
+			<optional><ref name="formInfo"/></optional>
+			<choice>
+				<group>
+					<optional><ref name="grammar"/></optional>
+					<optional><ref name="grammarInfo"/></optional>
+					<optional><ref name="grammarAlternative"/></optional>
+					<optional><ref name="sense"/></optional>
+				</group>
+				<oneOrMore><ref name="hom"/></oneOrMore>
+			</choice>
+			<zeroOrMore>	<ref name="related"/></zeroOrMore>
+			<zeroOrMore>	<ref name="note"/></zeroOrMore>
+		</element>
+	</define>
+	<define name="entry.attlist">
+		<ref name="Common.attrib"/>
+		<ref name="Common.attrib.dbid"/>
+		<attribute name="key">
+			<a:documentation>The entry's primary key, a unique identifier composed of the page number and position on the page. "P065.15" stands for the 15th entry on page 65. It can double as a sort key when XML document order is not available (remember that headwords are not sorted alphabetically in Streitberg's dictionary: compound verbs are grouped with the main verb). </a:documentation>
+			<data type="ID">
+				<param name="pattern">P[0-9]{3}\.[0-9]{2}</param>
+			</data>
+		</attribute>
+		<optional>
+			<attribute name="n">
+				<a:documentation>Index number for homographs that have not been grouped into one entry, corresponding to members of a TEI &lt;superEntry&gt;. The number is printed before the boldface headword in Streitberg's dictionary. However, there may be unnumbered (compound) entries in between numbered entries, which complicates grouping into a superEntry (e.g. the sequence 1.wisan; at-wisan; faura-wisan; fra-wisan; [...] 2.wisan; bi-wisan; 3.wisan: the number is implied on the compound verbs). To be discussed.</a:documentation>
+				<data type="unsignedByte">
+					<param name="minInclusive">1</param>
+					<param name="maxInclusive">9</param>
+				</data>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:type">
+				<a:documentation>When present, the attribute indicates that the entry is a cross-reference to another entry. The attribute value provides a temorary classification. The sense-element should probably be encoded using an equivalent of TEI &lt;xr&gt;.</a:documentation>
+				<choice>
+					<value>link-derived</value><a:documentation>The entry is a derived form, pointing to the main lemma.</a:documentation>
+					<value>link-suppletive</value><a:documentation>The entry is a suppletive form, pointing to the main lemma.</a:documentation>
+					<value>link-conjecture</value><a:documentation>The entry is a conjecture, pointing to the main lemma.</a:documentation>
+					<value>link-spelling</value><a:documentation>The entry is a spelling variant, pointing to  the main lemma.</a:documentation>
+					<value>link-hyphen</value><a:documentation>The entry is a form with differing hyphenation, pointing to the main lemma.</a:documentation>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:status">
+				<a:documentation>Temporary flag for internal use.</a:documentation>
+				<choice>
+					<value>problematic</value><a:documentation>Encoding of this entry is problematic (see notes for more information).</a:documentation>
+				</choice>
+			</attribute>
+		</optional>
+	</define>
+
+	<define name="hom">
+		<element name="hom">
+			<a:documentation>One out of several homographs with differing part-of-speech, grouped in one entry (equivalent to TEI &lt;hom&gt;).</a:documentation>
+			<ref name="hom.attlist"/>
+			<ref name="grammar"/>
+			<optional><ref name="grammarInfo"/></optional>
+			<optional><ref name="sense"/></optional>
+		</element>
+	</define>
+	<define name="hom.attlist">
+		<ref name="Common.attrib"/>
+		<ref name="Common.attrib.n"/>
+		<ref name="Common.attrib.dbid"/>
+	</define>
+
+	<define name="related">
+		<element name="related">
+			<a:documentation>Related entry in the body of another entry, typically a derived or inflected form of the entry word (equivalent to TEI &lt;re&gt;).</a:documentation>
+			<ref name="related.attlist"/>
+			<ref name="form"/>
+			<optional><ref name="formInfo"/></optional>
+			<optional><ref name="grammar"/></optional>
+			<optional><ref name="grammarInfo"/></optional>
+			<optional><ref name="sense"/></optional>
+		</element>
+	</define>
+	<define name="related.attlist">
+		<ref name="Common.attrib"/>
+		<ref name="Common.attrib.dbid"/>
+	</define>
+
+	<define name="sense">
+		<element name="sense">
+			<a:documentation>Definition and translation of the entry, containing mixed content optionally followed by one or more nested sense-elements (corresponds to TEI &lt;sense&gt;).</a:documentation>
+			<ref name="sense.attlist"/>
+			<ref name="Common.Inline.model"/>
+			<zeroOrMore>
+				<ref name="sense"/>
+			</zeroOrMore>
+		</element>
+	</define>
+	<define name="sense.attlist">
+		<ref name="Common.attrib"/>
+		<ref name="Common.attrib.n"/>
+	</define>
+
+	<define name="form">
+		<element name="form">
+			<a:documentation>Headword (corresponds to TEI &lt;orth&gt;)</a:documentation>
+			<ref name="form.attlist"/>
+			<ref name="Common.Text.model"/>
+		</element>
+	</define>
+	<define name="form.attlist">
+		<ref name="Common.attrib"/>
+		<ref name="Common.attrib.critical"/>
+		<optional>
+			<attribute name="auslautverhärtung">
+				<a:documentation>Information on final devoicing, using three-valued logic (true = e.g. hlaifs, hlaiBis; false = e.g. bloþ, bloþis; missing = not applicable). Streitberg indicates final devoicing by highlighting the devoiced phoneme (italics) and adding the stem consonant in parentheses, e.g. hlaiFs (b). To be tagged manually, as he is not always consistent.</a:documentation>
+				<choice>
+					<value>true</value>
+					<value>false</value>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:inflected">
+				<a:documentation>Flag indicating that the headword is an inflected form, because the inflectional paradigm (and hence dictionary form) cannot be determined with reasonable certainty. Typically proper names, foreign words or nouns that have only survived in the dative or genitive plural.</a:documentation>
+				<value>true</value>
+			</attribute>
+		</optional>
+	</define>
+	
+	<define name="formInfo">
+		<element name="formInfo">
+			<a:documentation>Additional information on the form (within parentheses following the headword). Typically spelling variations and cross-references to Streitberg's Gotisches Elementarbuch (1920) or other external sources.</a:documentation>
+			<ref name="Common.attrib"/>
+			<ref name="Common.Inline.model"/>
+		</element>
+	</define>
+	
+	<define name="formAlternative">
+		<element name="formAlternative">
+			<a:documentation>Alternative form(s), typically spelling variants for the headword. Doesn't fit very well into the current (intermediate) schema, but alternative headwords are rare in the dictionary (about 20-30 occurrences). To be discussed; see also element grammarAlternative.</a:documentation>
+			<ref name="Common.attrib"/>
+			<zeroOrMore>
+				<choice>
+					<text/>
+					<ref name="form"/>
+					<ref name="formInfo"/>
+					<ref name="manuscript"/>
+				</choice>
+			</zeroOrMore>
+		</element>
+	</define>
+
+	<define name="grammar">
+		<element name="grammar">
+			<a:documentation>Grammatical information, usually combining part-of-speech and inflectional class into one label, e.g. Ma (noun, masculine a-stem) or st.V.3 (strong verb, third category).</a:documentation>
+			<ref name="grammar.attlist"/>
+			<interleave>
+				<ref name="Common.Text.model"/>
+				<zeroOrMore>
+					<ref name="linkLemma">
+						<a:documentation>The label for suppletive forms may refer to the main lemma.</a:documentation>
+					</ref>
+				</zeroOrMore>
+			</interleave>
+		</element>
+	</define>
+	<define name="grammar.attlist">
+		<ref name="Common.attrib"/>
+		<optional>
+			<attribute name="implied">
+				<a:documentation>Flag indicating that the grammatical label is implied, i.e. omitted by Streitberg because the headword is a compound. Grammatical information is generally not repeated on derived forms (e.g. verbs with prefix; the reader is referred to the base form). The label should be hidden or rendered in gray when generating an accurate typographical or editorial view.</a:documentation>
+				<value>true</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="norm">
+				<a:documentation>Normalization of the given grammatical label. The reason to do so is specified in attribute normReason. Could be useful when searching for all instances of a particular class.</a:documentation>
+				<text/>
+			</attribute>
+			<attribute name="normReason">
+				<a:documentation>See attribute norm.</a:documentation>
+				<choice>
+					<value>variation</value><a:documentation>Alternate spelling or wording, e.g. "Akk.Pl." for "Akk.Plur."</a:documentation>
+					<value>subclass</value><a:documentation>Subset of the generic class, e.g. "st.Adj.a" for "Adj.a"</a:documentation>
+					<value>irregular</value><a:documentation>Irregular instance of the generic class, e.g. "unreg.abl.V.1"</a:documentation>
+					<value>uncertain</value><a:documentation>Hypothesis, e.g. "M?a" or "M(i)"</a:documentation>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:irregular">
+				<a:documentation>Flag indicating that the lemma is morphologically irregular.</a:documentation>
+				<value>true</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:uncertain">
+				<a:documentation>Flag indicating that the given grammatical class is hypothetical (usually expressed by question mark or parentheses in the label).</a:documentation>
+				<value>true</value>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="db:pos">
+				<a:documentation>Reference to a part-of-speech tag in the database.</a:documentation>
+				<data type="unsignedByte"/>
+			</attribute>
+		</optional>
+	</define>
+	
+	<define name="grammarInfo">
+		<element name="grammarInfo">
+			<a:documentation>Additional information on the grammatical class (within parentheses following the class label). Typically cross-references to paragraphs in Streitberg's Gotisches Elementarbuch (1920).</a:documentation>
+			<ref name="Common.attrib"/>
+			<ref name="Common.Inline.model"/>
+		</element>
+	</define>
+	
+	<define name="grammarAlternative">
+		<element name="grammarAlternative">
+			<a:documentation>Alternative reconstructions, having different declension (e.g. skauns* or skauneis*). Doesn't really fit into the current (intermediate) schema, but entries with alternative reconstructions are rare. To be discussed; see also element formAlternative.</a:documentation>
+			<ref name="Common.attrib"/>
+			<zeroOrMore>
+				<choice>
+					<text/>
+					<ref name="form"/>
+					<ref name="grammar"/>
+					<ref name="grammarInfo"/>
+				</choice>
+			</zeroOrMore>
+		</element>
+	</define>
+	
+	<define name="note">
+		<element name="note">
+			<a:documentation>Footnote by the encoder(s), not part of the actual dictionary text. Could be used for comments on the content of an entry (additional information), to signal encoding problems, etc.</a:documentation>
+			<ref name="note.attlist"/>
+			<ref name="Common.Inline.model"/><!-- Should probably be inline XHTML or TEI. -->
+		</element>
+	</define>
+	<define name="note.attlist">
+		<ref name="Common.attrib"/>
+		<optional>
+			<attribute name="scope">
+				<a:documentation>Scope or type of the note:</a:documentation>
+				<choice>
+					<value>internal</value><a:documentation>Temporary note for internal use, e.g. related to the encoding process.</a:documentation>
+					<value>public</value><a:documentation>Permanent note that may be rendered as a footnote to the actual data, e.g. related to the content of the entry or corrections to the dictionary text.</a:documentation>
+				</choice>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="resp">
+				<a:documentation>Name (acronym) of the person responsible for making the note.</a:documentation>
+			</attribute>
+		</optional>
+		<optional>
+			<attribute name="tags">
+				<a:documentation>List of free-form tags (à la Web 2.0) that may be used internally to flag or categorize the note.</a:documentation>
+				<list>
+					<oneOrMore>
+						<data type="NMTOKEN"/>
+					</oneOrMore>
+				</list>
+			</attribute>
+		</optional>
+	</define>
+	
+	<div>
+		<a:documentation>Common elements, attributes and content models.</a:documentation>
+		<define name="Common.attrib">
+			<optional>
+				<attribute name="xml:lang">
+					<a:documentation>The ubiquitous (yet severely underused) language identifier, as defined in the XML specification. Automatically inherited by descendants, unless overridden. ISO-639 language code, as per RFC 3066: "Tags for the Identification of Languages".</a:documentation>
+					<choice>
+						<value>got</value>
+						<a:documentation>Gothic</a:documentation>
+						<value>grc</value>
+						<a:documentation>Greek, Ancient</a:documentation>
+						<value>non</value>
+						<a:documentation>Norse, Old</a:documentation>
+						<value>de</value>
+						<a:documentation>German</a:documentation>
+						<value>la</value>
+						<a:documentation>Latin</a:documentation>
+						<value>en</value>
+						<a:documentation>English</a:documentation>
+						<value>nl</value>
+						<a:documentation>Dutch</a:documentation>
+						<!--Add codes as needed (or leave blank). Having a limited list is convenient for autocompletion. -->
+					</choice>
+				</attribute>
+			</optional>
+			<!-- 
+			Candidate attributes, currently not used (see (X)HTML, TEI and most other document formats):
+			<optional>
+				<attribute name="id"></attribute>
+			</optional>
+			<optional>
+				<attribute name="class|type|role"></attribute>
+			</optional>
+			<optional>
+				<attribute name="rend"></attribute>
+			</optional>
+			...
+			-->
+		</define>
+
+		<define name="Common.attrib.dbid">
+			<optional>
+				<attribute name="db:id">
+					<a:documentation>Reference to the primary key of the corresponding entry in the database. Arbitrary numerical value.</a:documentation>
+					<data type="unsignedShort">
+						<param name="minInclusive">1</param>
+						<param name="maxInclusive">9999</param>
+					</data>
+				</attribute>
+			</optional>
+		</define>
+
+		<define name="Common.attrib.n">
+			<optional>
+				<attribute name="n">
+					<a:documentation>Label used in numbering homographs or nested sense-levels.</a:documentation>
+					<data type="string">
+						<a:documentation>Either a single digit, letter or roman number less than or equal to 10.</a:documentation>
+						<param name="pattern">[0-9]|[a-zA-Z]|(V?I{1,3}|I?V|I?X)</param>
+					</data>
+				</attribute>
+			</optional>
+		</define>
+
+		<define name="Common.attrib.critical">
+			<optional>
+				<attribute name="reconstruction">
+					<a:documentation>Flag indicating that the form is reconstructed, normally marked by an asterisk in the source text. Currently redundant, as the asterisk is retained in the text transcription, but it makes for clearer queries and could also be used to label reconstructions that Streitberg did not mark as reconstructed (not uncommon; compare with modern practice in Braune/Ebbinghaus 1981, where the asterisk is applied consistently: "Ganz besonders dringlich schien es mir, die belegten von den unbelegten Formen saüberlich zu trennen" (introduction, p. 5)).</a:documentation>
+					<value>true</value>
+				</attribute>
+			</optional>
+			<optional>
+				<attribute name="conjecture">
+					<a:documentation>Flag indicating that the form is a conjecture, marked by [  ] in the source text. Mostly redundant (cf. supra).</a:documentation>
+					<value>true</value>
+				</attribute>
+			</optional>
+			<optional>
+				<attribute name="besserungsbedürftig">
+					<a:documentation>Flag indicating that the form is spurious or suspicious ('besserungsbedürftig'). The copy text has a dagger in front of the word. Mostly redundant (cf. supra).</a:documentation>
+					<value>true</value>
+				</attribute>
+			</optional>
+		</define>
+				
+		<define name="Common.Text.model">
+			<a:documentation>Emendable plain text.</a:documentation>
+			<zeroOrMore>
+				<choice>
+					<text />
+					<ref name="Common.Correction.class" />
+				</choice>
+			</zeroOrMore>
+		</define>
+		
+		<define name="Common.Correction.class">
+			<choice>
+				<ref name="error" />
+			</choice>
+		</define>
+		
+		<define name="Common.Inline.model">
+			<a:documentation>Mixed content used in block-level elements.</a:documentation>
+			<zeroOrMore>
+				<choice>
+					<text />
+					<ref name="Common.Correction.class"/>
+					<ref name="Common.Inline.class"/>
+				</choice>
+			</zeroOrMore>
+		</define>
+		
+		<define name="Common.Inline.class">
+			<choice>
+				<ref name="mentioned"/>
+				<ref name="quotation"/>
+				<ref name="translation"/>
+				<ref name="label"/>
+				<ref name="highlight"/>
+				<ref name="manuscript"/>
+				<ref name="linkText"/>
+				<ref name="linkLemma"/>
+				<ref name="linkExternal"/>
+				<ref name="group"/>
+			</choice>
+		</define>
+	</div>
+
+	<div>
+		<a:documentation>Inline elements, used in mixed content blocks. Short names, in order to improve readability of the densely tagged definition text.</a:documentation>
+		
+		<define name="error">
+			<element name="sic">
+				<a:documentation>Signals apparent errors (equivalent to TEI &lt;sic&gt;). Strictly limited to obvious typographical errors, of which we can reasonably assume that Streitberg would have corrected them himself (e.g. "kinnus *Fn" for "Fu").</a:documentation>
+				<ref name="Common.attrib"/>
+				<optional>
+					<attribute name="correct">
+						<a:documentation>TEI P4: "Gives a correction for the apparent error in the copy text".</a:documentation>
+					</attribute>
+				</optional>
+				<optional>
+					<attribute name="resp">
+						<a:documentation>TEI P4: "Signifies the editor or transcriber responsible for suggesting the correction".</a:documentation>
+					</attribute>
+				</optional>
+				<text />
+			</element>
+		</define>
+		
+		<define name="mentioned">
+			<element name="m">
+				<a:documentation>Words that are mentioned but not used (equivalent to TEI &lt;mentioned&gt;). Temporary solution for tagging Gothic, Greek, Latin or Old Norse words in the (German) definition text, as indicated by the language identifier ( xml:lang), without interpretation of their function. There is some overlap with the translation-element for Greek and the quotation-element for Gothic, elements which do imply interpretation. Gothic words followed by a reference to the text are marked up as quotations; only references to headwords or inflected forms mentioned in a grammatical context (e.g. in a sentence like "gaggan has irregular past tense 'iddja'") would be tagged as mentioned. The distinction is admittedly problematic. To be discussed.</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.attrib.critical"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+
+		<define name="translation">
+			<element name="tr">
+				<a:documentation>Translation into German or from Greek, as indicated by the language identifier (xml:lang). The distinction between Greek translations and mentioned words is not always clear. The entire dictionary has a problematic concept of 'multilinguality': are the German glosses translations of Gothic or Greek words? There is some inconsistency in the way Streitberg handles translations (naturally, since the dictionary predates formal text encoding by many decades).</a:documentation>
+				<ref name="Common.attrib"/>
+				<interleave>
+					<ref name="Common.Text.model"/>
+					<zeroOrMore>
+						<ref name="label">
+							<a:documentation>Translations occasionally include grammatical information, as in "einem (Dat.) etwas (Akk.) zeigen" (lemma at-augjan). The labels refer to Gothic case government, not German (even though they mostly coincide).</a:documentation>
+						</ref>
+					</zeroOrMore>
+				</interleave>
+			</element>
+		</define>
+
+		<define name="quotation">
+			<element name="q">
+				<a:documentation>Quotation from the Gothic Bible or minor fragments, in other words Gothic text (as specified by the  language identifier). However, the distinction between quotations and mentioned words is not always clear. As there is only one source of Gothic text (cf. Mossé 1956, p. 19: "nous ne connaissons pas *le* gotique, nous ne connaissons que la langue de la Bible wulfilienne [...]"), every Gothic word could be considered a quotation, minus reconstructions or inflected forms in a grammatical context (see mentioned-element). There are obviously no constructed examples in the dictionary. Generally speaking, quotations are followed by a reference to the text (see bib-element). To be discussed.</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+
+		<define name="label">
+			<element name="lb">
+				<a:documentation>Grammatical label that gives information on case, tense, aspect, usage etc. Stricter typologies (and normalized values) could be defined later on.</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+
+		<define name="manuscript">
+			<element name="ms">
+				<a:documentation>Manuscript siglum, such as "CA" (Codex Argenteus) or "AB" (= 'both in Codex Ambrosianus A and B'), used when quoting spurious readings, conjectures or variants.</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+
+		<define name="highlight">
+			<element name="hi">
+				<a:documentation>Unspecified highlighting by means of 'Sperrdruck' (i.e. spaced letters, 'l i k e  t h i s').  Used for part-of-speech descriptions in homographs and more generally whenever a distinction is made between (grammatical) items within one entry. Should be replaced by a rendition-attribute on logical elements (corresponding to TEI rend). Hardly used at all in the current transcription (and never for grammar-elements in homographs).</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+			
+		<define name="linkLemma">
+			<element name="ref">
+				<a:documentation>Cross-reference to another lemma, specified by the key in the target attribute. Contains either a Gothic headword (tagged as 'mentioned') or any other text that could be turned into a hyperlink to another entry (e.g. the abbreviation "s.d.", "siehe dort").</a:documentation>
+				<ref name="Common.attrib"/>
+				<attribute name="target">
+					<a:documentation>Foreign key: a reference to the key of another entry.</a:documentation>
+					<data type="IDREF">
+						<param name="pattern">P[0-9]{3}\.[0-9]{2}</param>
+					</data>
+				</attribute>
+				<choice>
+					<ref name="mentioned"/>
+					<ref name="Common.Text.model"/>
+				</choice>
+			</element>
+		</define>
+		
+		<define name="linkText">
+			<element name="bib">
+				<a:documentation>Cross-reference to the Gotic Bible or minor fragments. A normalized target attribute could be supplied automatically in a second stage of encoding, using regex rules.</a:documentation>
+				<ref name="Common.attrib"/>
+				<ref name="Common.Text.model"/>
+			</element>
+		</define>
+
+		<define name="linkExternal">
+			<element name="xref">
+				<a:documentation>Cross-reference to Streitberg's Gotisches Elementarbuch (1920) or other external sources. A normalized target attribute could be supplied automatically in a second stage of encoding, using regex rules.</a:documentation>
+				<ref name="Common.attrib"/>
+				<interleave>
+					<ref name="Common.Text.model"/>
+					<zeroOrMore>
+						<element name="sup">
+							<a:documentation>Superscript reference to a numbered note in the Elementarbuch: "Die [...] Zahlen verweisen auf die Paragraphen des Gotischen Elementarbuchs, ihre Exponenten bezeichnen die Anmerkungen" (Streitberg 1910, Abkürzungen).</a:documentation>
+							<data type="string">
+								<param name="pattern">\d+[a-zA-Z]?</param><!-- OK for current data, may have to change -->
+							</data>
+						</element>
+					</zeroOrMore>
+				</interleave>
+			</element>
+		</define>
+		
+		<define name="group">
+			<element name="group">
+				<a:documentation>Semantically neutral span-element, used to tag a segment of inline text for any purpose. Currently groups mixed content preceding nested sense-elements (which makes it easier to maintain indentation and readibility after applying XSLT-transformations). A better purpose would be to bind quotations, translations and text references together, or to tag the grouping of quoted examples according to case.</a:documentation>
+				<ref name="Common.attrib"/>	
+				<ref name="Common.Inline.model"/><!-- recursive -->
+			</element>
+		</define>
+	</div>
+
+</grammar>
