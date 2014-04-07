@@ -97,8 +97,8 @@ public class RollYourOwnCluster {
    }
 
    public void close() {
-      session.getCluster().shutdown();
-      session.shutdown();
+      session.getCluster().close();
+      session.close();
    }
 
    public static void main(String[] args) {

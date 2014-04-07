@@ -6,10 +6,10 @@ import java.util.UUID;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ExecutionInfo;
 import com.datastax.driver.core.Host;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.QueryTrace;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 public class TracingExample extends SimpleClient {
@@ -25,7 +25,7 @@ public class TracingExample extends SimpleClient {
           *            'Golden Brown', 'La Folie', 'The Stranglers'
           *    );
           */
-      Query insert = QueryBuilder.insertInto("simplex", "songs")
+      Statement insert = QueryBuilder.insertInto("simplex", "songs")
             .value("id", UUID.randomUUID())
             .value("title", "Golden Brown")
             .value("album", "La Folie")
@@ -51,7 +51,7 @@ public class TracingExample extends SimpleClient {
    }
    
    public void traceSelect() {
-      Query scan = new SimpleStatement("SELECT * FROM simplex.songs;");
+      Statement scan = new SimpleStatement("SELECT * FROM simplex.songs;");
       ExecutionInfo executionInfo = getSession().execute(scan.enableTracing()).getExecutionInfo();
       System.out.printf( "Host (queried): %s\n", executionInfo.getQueriedHost().toString() );
       for (Host host : executionInfo.getTriedHosts()) {

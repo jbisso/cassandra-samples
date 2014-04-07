@@ -187,8 +187,8 @@ public class SimpleClient {
     * Shuts down the session and its cluster.
     */
    public void close() {
-      session.shutdown();
-      session.getCluster().shutdown();
+      session.close();
+      session.getCluster().close();
    }
 
    /**

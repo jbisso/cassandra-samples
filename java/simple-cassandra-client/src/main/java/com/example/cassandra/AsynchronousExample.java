@@ -1,8 +1,8 @@
 package com.example.cassandra;
 
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
 public class AsynchronousExample extends SimpleClient {
@@ -10,7 +10,7 @@ public class AsynchronousExample extends SimpleClient {
 	}
 	
 	public ResultSetFuture getRows() {
-		Query query = QueryBuilder.select().all().from("simplex", "songs");
+		Statement query = QueryBuilder.select().all().from("simplex", "songs");
 		return getSession().executeAsync(query);
 	}
 

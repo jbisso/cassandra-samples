@@ -93,7 +93,7 @@ public class TestQueryBuilder extends SimpleClient {
          		"successfully execute the query with the specified consistency level.");
       } catch (QueryValidationException e) {
          System.out.printf("The query %s \nis not valid, for example, incorrect syntax.\n",
-         		statement.getQueryString());
+         		statement);
       } catch (IllegalStateException e) {
          System.out.println("The BoundStatement is not ready.");
       }

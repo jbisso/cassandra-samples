@@ -29,7 +29,7 @@ public class MultiDCClient {
     public static void main(String[] args) {
         MultiDCClient client = new MultiDCClient();
         client.connect("127.0.0.1");
-        client.session.shutdown();
+        client.session.close();
     }
 
 }

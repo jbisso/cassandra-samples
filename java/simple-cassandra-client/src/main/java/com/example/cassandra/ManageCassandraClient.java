@@ -14,7 +14,9 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.yammer.metrics.reporting.JmxReporter;
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
 
 public class ManageCassandraClient {
 	private MBeanServerConnection mbsConnection;
@@ -58,7 +60,10 @@ public class ManageCassandraClient {
 	}
 	
 	public void printNumberInserts() {
-		System.out.println("Calling Yammer gauge via JMX.");
+		System.out.println("Calling Metrics gauge via JMX.");
+		//MetricRegistry registry = getSessio
+		//JmxReporter reporter = ConsoleReporter.forRegistry();
+		/*
 		try {
 	      ObjectName objectName = new ObjectName("\"com.example.cassandra\":type=\"MetricsExample\"," +
 	      		"name=\"com.example.cassandra.numberInserts\"");
@@ -69,6 +74,7 @@ public class ManageCassandraClient {
       } catch (NullPointerException npe) {
 	      npe.printStackTrace();
       }
+      */
 	}
 
 	public static void main(String[] args) {

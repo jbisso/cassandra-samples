@@ -14,11 +14,11 @@ import com.datastax.driver.core.Metrics;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
-import com.yammer.metrics.core.Counter;
-import com.yammer.metrics.core.Gauge;
-import com.yammer.metrics.core.Metric;
-import com.yammer.metrics.core.MetricName;
-import com.yammer.metrics.core.Timer;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Metric;
+import static com.codahale.metrics.MetricRegistry.name;
+import com.codahale.metrics.Timer;
 
 public class MetricsExample extends SimpleClient {
 	private static PreparedStatement preparedSelect;
@@ -89,36 +89,38 @@ public class MetricsExample extends SimpleClient {
 
    public void addMetrics() {
 	   getSession().getCluster().getMetrics().getRegistry()
-	   	.newGauge(
-	   			getClass(),
-	   			"com.example.cassandra.numberInserts", 
-	   			new Gauge<Integer>() {
-	   				@Override
-			   		public Integer value() {
-			   			return numberInserts;
-			   		}
-	   	});
+	   	.register(
+	   	        name(
+   	                getClass(),
+   	                "numberInserts"), 
+    	   			new Gauge<Integer>() {
+    			   		public Integer getValue() {
+    			   			return numberInserts;
+    			   		}
+	   	            }
+	   	        );
    }
    
    public void addMetrics02() {
 	   getSession().getCluster().getMetrics().getRegistry()
-   	.newGauge(
-   			getClass(),
-   			"com.example.cassandra.insertMetrics", 
-   			new Gauge<List<InsertMetrics>>() {
-   				@Override
-		   		public List<InsertMetrics> value() {
-		   			return insertMetrics;
-		   		}
-   	});
+	   .register(
+   	        name(
+   	             getClass(),
+   	            "insertMetrics"),
+   	            new Gauge<List<InsertMetrics>>() {
+    		   		public List<InsertMetrics> getValue() {
+    		   			return insertMetrics;
+    		   		}
+   	            }
+   	        );
    }
 
 	public void listMetrics() {
-   	Map<MetricName, Metric> metrics = getSession().getCluster().getMetrics().getRegistry().allMetrics();
-	   for (MetricName metricName : metrics.keySet()) {
+   	Map<String, Metric> metrics = getSession().getCluster().getMetrics().getRegistry().getMetrics();
+	   for (String metricName : metrics.keySet()) {
 	      System.out.printf("%s:%s - %s\n", 
-	      		metricName.getType(), 
-	      		metricName.getName(), 
+	      		metricName, 
+	      		metrics.get(metricName), 
 	      		metrics.get(metricName).getClass() );
       }
    }
@@ -127,20 +129,20 @@ public class MetricsExample extends SimpleClient {
       System.out.println("Metrics");
       Metrics metrics = getSession().getCluster().getMetrics();
       Gauge<Integer> gauge = metrics.getConnectedToHosts();
-      Integer numberOfHosts = gauge.value();
+      Integer numberOfHosts = gauge.getValue();
       System.out.printf("Number of hosts: %d\n", numberOfHosts);
       Metrics.Errors errors = metrics.getErrorMetrics();
       Counter counter = errors.getReadTimeouts();
-      System.out.printf("Number of read timeouts: %d\n", counter.count());
+      System.out.printf("Number of read timeouts: %d\n", counter.getCount());
       Timer timer = metrics.getRequestsTimer();
-      System.out.printf("Number of user requests: %d %s\n", timer.count(), timer.eventType());
+      //System.out.printf("Number of user requests: %d %s\n", timer.getCount(), timer.eventType());
       Metric ourMetric = getSession()
       		.getCluster()
       		.getMetrics()
       		.getRegistry()
-      		.allMetrics()
-      		.get(new MetricName(getClass(), "com.example.cassandra.numberInserts"));
-      System.out.printf("Number of insert statements executed: %5d\n", ((Gauge<?>) ourMetric).value());
+      		.getMetrics()
+      		.get(name(getClass(), "numberInserts"));
+      System.out.printf("Number of insert statements executed: %5d\n", ((Gauge<?>) ourMetric).getValue());
    }
 	
 	public void printMetrics02() {
@@ -148,10 +150,10 @@ public class MetricsExample extends SimpleClient {
       		.getCluster()
       		.getMetrics()
       		.getRegistry()
-      		.allMetrics()
-      		.get(new MetricName(getClass(), "com.example.cassandra.insertMetrics"));
+      		.getMetrics()
+      		.get(name(getClass(), "insertMetrics"));
 		@SuppressWarnings("unchecked")
-      List<InsertMetrics> inserts = (List<InsertMetrics>) ((Gauge<?>) ourMetric).value();
+      List<InsertMetrics> inserts = (List<InsertMetrics>) ((Gauge<?>) ourMetric).getValue();
 		for (InsertMetrics insertMetrics : inserts) {
 			System.out.printf("Host queried: %s; rowId: %s; achieved consistency level: %s\n", 
 					insertMetrics.getQueriedNode().getAddress(), 
