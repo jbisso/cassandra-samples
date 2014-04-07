@@ -163,7 +163,7 @@ public class SimpleClient {
 
    /**
     * Drops the specified schema.
-    * @param keyspace the kyspace to drop (and all of its data)
+    * @param keyspace the keyspace to drop (and all of its data)
     */
    public void dropSchema(String keyspace) {
       getSession().execute("DROP KEYSPACE " + keyspace);

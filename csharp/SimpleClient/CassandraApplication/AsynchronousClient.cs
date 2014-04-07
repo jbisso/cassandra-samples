@@ -13,12 +13,12 @@ namespace CassandraApplication
     {
         public AsynchronousClient() { }
 
-        public CqlRowSet GetRows()
+        public RowSet GetRows()
         {
             Statement query = new SimpleStatement("SELECT * FROM simplex.songs;");
             IAsyncResult asyncResult = Session.BeginExecute(query, null, null);
             asyncResult.AsyncWaitHandle.WaitOne();
-            CqlRowSet result = Session.EndExecute(asyncResult);
+            RowSet result = Session.EndExecute(asyncResult);
             return result;
         }
 
@@ -28,12 +28,12 @@ namespace CassandraApplication
             return Session.BeginExecute(statement, null, null);
         }
 
-        public void PrintResults(CqlRowSet results)
+        public void PrintResults(RowSet results)
         {
             Console.WriteLine(String.Format("{0, -30}\t{1, -20}\t{2, -20}\t{3, -30}",
                 "title", "album", "artist", "tags"));
             Console.WriteLine("-------------------------------+-----------------------+--------------------+-------------------------------");
-            foreach (CqlRow row in results.GetRows())
+            foreach (Row row in results.GetRows())
             {
                 Console.WriteLine(String.Format("{0, -30}\t{1, -20}\t{2, -20}\t{3}",
                     row.GetValue<String>("title"), row.GetValue<String>("album"),
