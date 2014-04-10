@@ -14,7 +14,8 @@ public class BoundStatementsClient extends SimpleClient {
     private static final String INSERT_PLAYLISTS_DATA_PREPARED = 
         "INSERT INTO simplex.playlists (id, song_id, title, album, artist) VALUES (?, ?, ?, ?, ?);";
         
-    private PreparedStatement statement;
+    private PreparedStatement insertSongsDataStatement;
+    private PreparedStatement insertPlaylistsDataStatement;
 
     public BoundStatementsClient() {
 	}
@@ -23,12 +24,12 @@ public class BoundStatementsClient extends SimpleClient {
 	 * Prepares the insert statements used by loadData() method.
 	 */
 	public void prepareStatements() {
-	    statement = getSession().prepare(INSERT_SONGS_DATA_PREPARED);
-	    statement = getSession().prepare(INSERT_PLAYLISTS_DATA_PREPARED);
+	    insertSongsDataStatement = getSession().prepare(INSERT_SONGS_DATA_PREPARED);
+	    insertPlaylistsDataStatement = getSession().prepare(INSERT_PLAYLISTS_DATA_PREPARED);
 	}
 
 	public void loadData() {
-      BoundStatement boundStatement = new BoundStatement(statement);
+      BoundStatement boundStatement = new BoundStatement(insertSongsDataStatement);
       Set<String> tags = new HashSet<String>();
       tags.add("jazz");
       tags.add("2013");
@@ -57,7 +58,7 @@ public class BoundStatementsClient extends SimpleClient {
             "Mick Jager",
             tags) );
       // playlists table
-      boundStatement = new BoundStatement(statement);
+      boundStatement = new BoundStatement(insertPlaylistsDataStatement);
       getSession().execute(boundStatement.bind(
             UUID.fromString("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
