@@ -134,7 +134,7 @@ public class SimpleClient {
             "-------------------------------+-----------------------+--------------------"));
       for (Row row : results) {
          System.out.println(String.format("%-30s\t%-20s\t%-20s", row.getString("title"),
-               row.getString("album"),  row.getString("artist")));
+               row.getString("album"), row.getString("artist")));
       }
       System.out.println();
    }

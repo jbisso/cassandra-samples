@@ -14,6 +14,7 @@ import com.datastax.driver.core.Metrics;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -32,7 +33,8 @@ public class MetricsExample extends SimpleClient {
    }
 	
    @Override
-	public void createSchema() {
+   public void createSchema() {
+       System.out.println("Creating the lexicon.concordance table.");
 		getSession().execute(
          "CREATE KEYSPACE lexicon WITH replication " + 
          "= {'class':'SimpleStrategy', 'replication_factor':2};");
@@ -47,8 +49,9 @@ public class MetricsExample extends SimpleClient {
    @Override
    public void loadData() {
 		concordance = new Concordance();
-		concordance.analyzeText(new File(System.getProperty("user.home") 
-				+ "/Documents/houndBaskervilles.txt"), "HoB");
+		concordance.analyzeText(new File(System.getProperty("user.dir") 
+		        + File.separator + "src" + File.separator + "main" + File.separator 
+		        + "resources" + File.separator + "houndBaskervilles.txt"), "HoB");
 		PreparedStatement preparedInsert = getSession().prepare(
             "INSERT INTO lexicon.concordance " +
             "(id, word, contexts, occurrences) " +
@@ -56,23 +59,23 @@ public class MetricsExample extends SimpleClient {
 		BoundStatement boundInsert;
 		for (String entry : concordance.getEntries().keySet()) {
 			numberInserts += 1;
-      	boundInsert = new BoundStatement(preparedInsert);
-      	//boundInsert.setConsistencyLevel(ConsistencyLevel.ANY);
-      	UUID uuid = UUID.randomUUID();
-      	List<String> contexts = concordance.getEntries().get(entry);
-         boundInsert.bind(uuid, entry, contexts, contexts.size());
-         try {
-         	ResultSet results = getSession().execute(boundInsert);
-         	ExecutionInfo execInfo = results.getExecutionInfo();
-         	InsertMetrics metric = new InsertMetrics();
-         	metric.setQueriedNode(execInfo.getQueriedHost());
-         	metric.setConsistencyLevelAchieved(execInfo.getAchievedConsistencyLevel());
-         	metric.setRowId(uuid);
-         	this.insertMetrics.add(metric);
-         } catch (Exception e) {
-         	System.err.printf("Problem inserting data: %s\n", e.getMessage());
-         }
-      }
+            boundInsert = new BoundStatement(preparedInsert);
+            boundInsert.setConsistencyLevel(ConsistencyLevel.ANY);
+            UUID uuid = UUID.randomUUID();
+            List<String> contexts = concordance.getEntries().get(entry);
+            boundInsert.bind(uuid, entry, contexts, contexts.size());
+            try {
+             	ResultSet results = getSession().execute(boundInsert);
+             	ExecutionInfo execInfo = results.getExecutionInfo();
+             	InsertMetrics metric = new InsertMetrics();
+             	metric.setQueriedNode(execInfo.getQueriedHost());
+             	metric.setConsistencyLevelAchieved(execInfo.getAchievedConsistencyLevel());
+             	metric.setRowId(uuid);
+             	this.insertMetrics.add(metric);
+            } catch (Exception e) {
+                System.err.printf("Problem inserting data: %s\n", e.getMessage());
+            }
+		}
 		System.out.println("Data loaded.");
    }
 
@@ -135,7 +138,13 @@ public class MetricsExample extends SimpleClient {
       Counter counter = errors.getReadTimeouts();
       System.out.printf("Number of read timeouts: %d\n", counter.getCount());
       Timer timer = metrics.getRequestsTimer();
-      //System.out.printf("Number of user requests: %d %s\n", timer.getCount(), timer.eventType());
+      Timer.Context context = timer.time();
+      try {
+          long numberUserRequests = timer.getCount();
+          System.out.printf("Number of user requests: %d\n", numberUserRequests);
+      } finally {
+          context.stop();
+      }
       Metric ourMetric = getSession()
       		.getCluster()
       		.getMetrics()
@@ -146,14 +155,14 @@ public class MetricsExample extends SimpleClient {
    }
 	
 	public void printMetrics02() {
-      Metric ourMetric = getSession()
+	    Metric ourMetric = getSession()
       		.getCluster()
       		.getMetrics()
       		.getRegistry()
       		.getMetrics()
       		.get(name(getClass(), "insertMetrics"));
 		@SuppressWarnings("unchecked")
-      List<InsertMetrics> inserts = (List<InsertMetrics>) ((Gauge<?>) ourMetric).getValue();
+		List<InsertMetrics> inserts = (List<InsertMetrics>) ((Gauge<?>) ourMetric).getValue();
 		for (InsertMetrics insertMetrics : inserts) {
 			System.out.printf("Host queried: %s; rowId: %s; achieved consistency level: %s\n", 
 					insertMetrics.getQueriedNode().getAddress(), 

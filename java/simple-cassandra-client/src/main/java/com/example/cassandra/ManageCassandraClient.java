@@ -14,9 +14,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.JmxReporter;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.JmxReporter.JmxGaugeMBean;
 
 public class ManageCassandraClient {
 	private MBeanServerConnection mbsConnection;
@@ -60,21 +58,17 @@ public class ManageCassandraClient {
 	}
 	
 	public void printNumberInserts() {
-		System.out.println("Calling Metrics gauge via JMX.");
-		//MetricRegistry registry = getSessio
-		//JmxReporter reporter = ConsoleReporter.forRegistry();
-		/*
+	    System.out.println("Calling Metrics gauge via JMX.");
 		try {
-	      ObjectName objectName = new ObjectName("\"com.example.cassandra\":type=\"MetricsExample\"," +
-	      		"name=\"com.example.cassandra.numberInserts\"");
-	      JmxReporter.GaugeMBean mBean = JMX.newMBeanProxy(mbsConnection, objectName, JmxReporter.GaugeMBean.class);
-	      System.out.printf("Number of inserts: %5d\n",  mBean.getValue());
-      } catch (MalformedObjectNameException mone) {
-	      mone.printStackTrace();
-      } catch (NullPointerException npe) {
-	      npe.printStackTrace();
-      }
-      */
+		    ObjectName objectName = new ObjectName("cluster1-metrics:" +
+		            "name=com.example.cassandra.MetricsExample.numberInserts");
+		    JmxGaugeMBean mBean = JMX.newMBeanProxy(mbsConnection, objectName, JmxGaugeMBean.class);
+		    System.out.printf("Number of inserts: %5d\n",  mBean.getValue());
+		} catch (MalformedObjectNameException mone) {
+		    mone.printStackTrace();
+		} catch (NullPointerException npe) {
+		    npe.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {

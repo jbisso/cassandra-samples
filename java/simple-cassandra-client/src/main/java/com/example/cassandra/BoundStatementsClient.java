@@ -9,14 +9,25 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 
 public class BoundStatementsClient extends SimpleClient {
-	public BoundStatementsClient() {
+    private static final String INSERT_SONGS_DATA_PREPARED = 
+        "INSERT INTO simplex.songs (id, title, album, artist, tags) VALUES (?, ?, ?, ?, ?);";
+    private static final String INSERT_PLAYLISTS_DATA_PREPARED = 
+        "INSERT INTO simplex.playlists (id, song_id, title, album, artist) VALUES (?, ?, ?, ?, ?);";
+        
+    private PreparedStatement statement;
+
+    public BoundStatementsClient() {
+	}
+	
+	/**
+	 * Prepares the insert statements used by loadData() method.
+	 */
+	public void prepareStatements() {
+	    statement = getSession().prepare(INSERT_SONGS_DATA_PREPARED);
+	    statement = getSession().prepare(INSERT_PLAYLISTS_DATA_PREPARED);
 	}
 
 	public void loadData() {
-      PreparedStatement statement = getSession().prepare(
-            "INSERT INTO songs " +
-            "(id, title, album, artist, tags) " +
-            "VALUES (?, ?, ?, ?, ?);");
       BoundStatement boundStatement = new BoundStatement(statement);
       Set<String> tags = new HashSet<String>();
       tags.add("jazz");
@@ -25,14 +36,14 @@ public class BoundStatementsClient extends SimpleClient {
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise'",
             "Bye Bye Blackbird'",
-            "Jos�phine Baker",
-            tags ) );
+            "Joséphine Baker",
+            tags) );
       tags = new HashSet<String>();
       tags.add("1996");
       tags.add("birds");
       getSession().execute(boundStatement.bind(
             UUID.fromString("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die M�sch",
+            "Die Mösch",
             "In Gold'", 
             "Willi Ostermann",
             tags) );
@@ -46,21 +57,17 @@ public class BoundStatementsClient extends SimpleClient {
             "Mick Jager",
             tags) );
       // playlists table
-      statement = getSession().prepare(
-            "INSERT INTO playlists " +
-            "(id, song_id, title, album, artist) " +
-            "VALUES (?, ?, ?, ?, ?);");
       boundStatement = new BoundStatement(statement);
       getSession().execute(boundStatement.bind(
             UUID.fromString("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
-            "Jos�phine Baker") );
+            "Joséphine Baker") );
       getSession().execute(boundStatement.bind(
             UUID.fromString("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID.fromString("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die M�sch",
+            "Die Mösch",
             "In Gold",
             "Willi Ostermann") );
       getSession().execute(boundStatement.bind(
@@ -80,11 +87,12 @@ public class BoundStatementsClient extends SimpleClient {
    }
 
    public static void main(String[] args) {
-		BoundStatementsClient client = new BoundStatementsClient();
-		client.connect("127.0.0.1");
-		client.createSchema();
-		client.workaround();
-		client.loadData();
+	  BoundStatementsClient client = new BoundStatementsClient();
+	  client.connect("127.0.0.1");
+	  client.createSchema();
+	  client.prepareStatements();
+	  //client.workaround();
+	  client.loadData();
       client.querySchema();
       client.updateSchema();
       client.dropSchema("simplex");
