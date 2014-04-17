@@ -12,8 +12,7 @@ namespace CassandraApplication
     {
         static void Main(string[] args)
         {
-            /*
-            SimpleClient client = new SimpleClient();
+            //SimpleClient client = new SimpleClient();
             BoundStatementsClient client = new BoundStatementsClient();
             client.Connect("127.0.0.1");
             client.CreateSchema();
@@ -23,24 +22,25 @@ namespace CassandraApplication
             client.DropSchema("simplex");
             client.Close();
 
-             * AsynchronousClient client = new AsynchronousClient();
+            /*
+            AsynchronousClient client = new AsynchronousClient();
             client.Connect("127.0.0.1");
             client.CreateSchema();
             client.LoadData();
 
             IAsyncResult asyncResult = client.GetRowsAsynchronously("SELECT * FROM simplex.songs;");
             asyncResult.AsyncWaitHandle.WaitOne();
-            CqlRowSet results = client.Session.EndExecute(asyncResult);
+            RowSet results = client.Session.EndExecute(asyncResult);
             client.PrintResults(results);
 
             Pause();
             client.DropSchema("simplex");
             client.Close();
-             */
 
             EmbeddedCqlClient client = new EmbeddedCqlClient();
             client.doArrayQuery();
             Pause();
+             */
         }
 
         public static void Pause()

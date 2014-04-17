@@ -10,9 +10,25 @@ namespace CassandraApplication
 {
     class BoundStatementsClient : SimpleClient
     {
+        
+        private const String INSERT_SONGS_DATA_PREPARED = 
+            "INSERT INTO simplex.songs (id, title, album, artist, tags) VALUES (?, ?, ?, ?, ?);";
+        private const String INSERT_PLAYLISTS_DATA_PREPARED = 
+            "INSERT INTO simplex.playlists (id, song_id, title, album, artist) VALUES (?, ?, ?, ?, ?);";
+
+        public PreparedStatement insertSongsDataStatement;
+        public PreparedStatement insertPlaylistsDataStatement;
+
         public BoundStatementsClient()
         {
         }
+
+        public void prepareStatements()
+        {
+            insertSongsDataStatement = Session.Prepare(INSERT_SONGS_DATA_PREPARED);
+            insertPlaylistsDataStatement = Session.Prepare(INSERT_PLAYLISTS_DATA_PREPARED);
+        }
+
 
         public override void LoadData()
         {
