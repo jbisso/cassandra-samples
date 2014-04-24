@@ -3,7 +3,7 @@ package com.datastax.videodb.policy;
 import java.util.Calendar;
 
 import com.datastax.driver.core.ConsistencyLevel;
-import com.datastax.driver.core.Query;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.policies.DowngradingConsistencyRetryPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
@@ -22,7 +22,7 @@ public class TimeOfDayRetryPolicy implements RetryPolicy {
 	}
 
 	@Override
-	public RetryDecision onReadTimeout(Query query, ConsistencyLevel cl,
+	public RetryDecision onReadTimeout(Statement query, ConsistencyLevel cl,
 			int requiredResponses, int receivedResponses,
 			boolean dataRetrieved, int nbRetry) {
 
@@ -38,7 +38,7 @@ public class TimeOfDayRetryPolicy implements RetryPolicy {
 	}
 
 	@Override
-	public RetryDecision onWriteTimeout(Query query, ConsistencyLevel cl,
+	public RetryDecision onWriteTimeout(Statement query, ConsistencyLevel cl,
 			WriteType writeType, int requiredAcks, int receivedAcks, int nbRetry) {
 		int hour = Calendar.getInstance().get(Calendar.HOUR);
 
@@ -52,7 +52,7 @@ public class TimeOfDayRetryPolicy implements RetryPolicy {
 	}
 
 	@Override
-	public RetryDecision onUnavailable(Query query, ConsistencyLevel cl,
+	public RetryDecision onUnavailable(Statement query, ConsistencyLevel cl,
 			int requiredReplica, int aliveReplica, int nbRetry) {
 		int hour = Calendar.getInstance().get(Calendar.HOUR);
 

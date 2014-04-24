@@ -10,9 +10,9 @@ import java.util.UUID;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.datastax.videodb.dao.VideoDbBasicImpl;
-import com.datastax.videodb.object.Comment;
-import com.datastax.videodb.object.User;
-import com.datastax.videodb.object.Video;
+import com.datastax.videodb.pojo.Comment;
+import com.datastax.videodb.pojo.User;
+import com.datastax.videodb.pojo.Video;
 
 public class VideoDb {
 
@@ -30,18 +30,21 @@ public class VideoDb {
 		}
 		
 		ArrayList<String> cassandraNodes = new ArrayList<String>();
-		cassandraNodes.add(prop.getProperty("nodes"));
+		String[] nodes = prop.getProperty("nodes").split(",");
+		for (String node : nodes ) {
+	        cassandraNodes.add(node);
+		}
 
 		VideoDbBasicImpl vdb = new VideoDbBasicImpl(cassandraNodes,
 				prop.getProperty("keyspace"));
 
 		// Basic get of a user. This is using the string method of executing CQL
-		User user = vdb.getUserByUsernameUsingString("tcodd");
+		User user = vdb.getUserByUserNameUsingString("tcodd");
 
 		System.out.println("Get user by using CQL string: " + user);
 
 		// Get the same user but with a prepared statement
-		user = vdb.getUserByUsernameUsingPreparedStatement("tcodd");
+		user = vdb.getUserByUserNameUsingPreparedStatement("tcodd");
 
 		System.out.println("Get user by using prepared statement: " + user);
 
@@ -102,7 +105,7 @@ public class VideoDb {
 		}
 
 		// Get a list of comments by UserName
-		comments = vdb.getCommentsByUsernameUsingPreparedStatement("tcodd");
+		comments = vdb.getCommentsByUserNameUsingPreparedStatement("tcodd");
 
 		for (Comment comment : comments) {
 			System.out.println("Get comments by UserName: " + comment);

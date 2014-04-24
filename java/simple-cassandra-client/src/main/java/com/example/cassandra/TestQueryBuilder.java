@@ -1,9 +1,12 @@
 package com.example.cassandra;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.SimpleStatement;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
@@ -107,6 +110,17 @@ public class TestQueryBuilder extends SimpleClient {
       getSession().execute("DROP KEYSPACE \"Simplex\"");
       System.out.println("Finished dropping keyspace.");
    }
+   
+
+   public List<Row> getRows(String keyspace, String table) {
+       Statement statement = QueryBuilder
+          .select()
+          .all()
+          .from(keyspace, table);
+       return getSession()
+          .execute(statement)
+          .all();
+   } 
 
    public static void main(String[] args) {
       TestQueryBuilder client = new TestQueryBuilder();

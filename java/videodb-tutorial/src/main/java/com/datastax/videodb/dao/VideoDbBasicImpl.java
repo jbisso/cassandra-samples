@@ -15,23 +15,22 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.Query;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.policies.Policies;
 import com.datastax.driver.core.querybuilder.Batch;
-import com.datastax.videodb.object.Comment;
-import com.datastax.videodb.object.User;
-import com.datastax.videodb.object.Video;
+import com.datastax.videodb.pojo.Comment;
+import com.datastax.videodb.pojo.User;
+import com.datastax.videodb.pojo.Video;
 import com.datastax.videodb.policy.TimeOfDayRetryPolicy;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 // Async read - Get and index then multiget
 // Load balancing policy
-//
 
 public class VideoDbBasicImpl implements VideoDbDAO {
 
@@ -97,7 +96,7 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	public void close() {
-		cluster.shutdown();
+		cluster.close();
 	}
 
 	/**
@@ -105,22 +104,21 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	 * @param username
 	 * @return the user
 	 */
-	public User getUserByUsernameUsingString(String username) {
-		User user = new User();
+	public User getUserByUserNameUsingString(String userName) {
+		User user = null;
 
 		ResultSet rs = session.execute("SELECT * FROM users WHERE username = '"
-				+ username + "'");
+				+ userName + "'");
 
 		// A result set has Rows which can be iterated over
 		for (Row row : rs) {
-			user.setUsername(username);
-			user.setFirstname(row.getString("firstname"));
-			user.setLastname(row.getString("lastname"));
+			user.setUserName(userName);
+			user.setFirstName(row.getString("firstname"));
+			user.setLastName(row.getString("lastname"));
 			user.setEmail(row.getString("email"));
 			user.setPassword(row.getString("Password"));
-			user.setCreated_date(row.getDate("created_date"));
+			user.setCreatedDate(row.getDate("created_date"));
 		}
-
 		return user;
 	}
 
@@ -129,25 +127,27 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	 * @param username
 	 * @return the user
 	 */
-	public User getUserByUsernameUsingPreparedStatement(String username) {
-		User user = new User();
+	public User getUserByUserNameUsingPreparedStatement(String userName) {
+		User user = null;
 
 		// The BoundStatement is created by the PreparedStatement created above
-		BoundStatement bs = getUserByNamePreparedStatement.bind();
-		bs.setString("username", username);
+		BoundStatement boundStatement = getUserByNamePreparedStatement.bind();
+		boundStatement.setString("username", userName);
 
 		// Custom retry policy
-		bs.setRetryPolicy(timeOfDayRetryPolicy);
+		boundStatement.setRetryPolicy(timeOfDayRetryPolicy);
 
-		ResultSet rs = session.execute(bs);
-
-		for (Row row : rs) {
-			user.setUsername(username);
-			user.setFirstname(row.getString("firstname"));
-			user.setLastname(row.getString("lastname"));
+		ResultSet results = session.execute(boundStatement);
+		// can only be one row when queried by primary key column
+        Row row = results.one();
+		if ( row != null ) {
+		    user = new User();
+			user.setUserName(userName);
+			user.setFirstName(row.getString("firstname"));
+			user.setLastName(row.getString("lastname"));
 			user.setEmail(row.getString("email"));
 			user.setPassword(row.getString("password"));
-			user.setCreated_date(row.getDate("created_date"));
+			user.setCreatedDate(row.getDate("created_date"));
 		}
 
 		return user;
@@ -160,12 +160,12 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	 */
 	public void setUserByPreparedStatement(User user) {
 		BoundStatement bs = setUser.bind();
-		bs.setString("username", user.getUsername());
-		bs.setString("firstname", user.getFirstname());
-		bs.setString("lastname", user.getLastname());
+		bs.setString("username", user.getUserName());
+		bs.setString("firstname", user.getFirstName());
+		bs.setString("lastname", user.getLastName());
 		bs.setString("email", user.getEmail());
 		bs.setString("password", user.getPassword());
-		bs.setDate("created_date", user.getCreated_date());
+		bs.setDate("created_date", user.getCreatedDate());
 
 		session.execute(bs);
 	}
@@ -180,17 +180,17 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 				"INSERT INTO users (username, firstname, ");
 		userInsert.append("lastname, email, password, created_date) VALUES (");
 		userInsert.append("'");
-		userInsert.append(user.getUsername());
+		userInsert.append(user.getUserName());
 		userInsert.append("', '");
-		userInsert.append(user.getFirstname());
+		userInsert.append(user.getFirstName());
 		userInsert.append("', '");
-		userInsert.append(user.getLastname());
+		userInsert.append(user.getLastName());
 		userInsert.append("', '");
 		userInsert.append(user.getEmail());
 		userInsert.append("', '");
 		userInsert.append(user.getPassword());
 		userInsert.append("', '");
-		userInsert.append(user.getCreated_date().toString();
+		userInsert.append(user.getCreatedDate().toString());
 		userInsert.append("'");
 		userInsert.append(")");
 
@@ -198,22 +198,21 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	/**
-	 * Using QueryBuilder is the most secure way of creating a CQL query.
+	 * Using QueryBuilder is the most secure way of creating a CQL Statement.
 	 * Avoids issues with injection style attacks.
 	 * @param videoId
 	 * @return
 	 */
 	public Video getVideoByIdUsingQueryBuilder(String videoId) {
-
 		Video video = new Video();
 
-		Query query = select().all().from("videodb", "videos")
+		Statement query = select().all().from("videodb", "videos")
 				.where(eq("videoId", videoId)).limit(10);
 
 		// We can change our Consistency Level on the fly, per read or write.
 		query.setConsistencyLevel(ConsistencyLevel.ONE);
 
-		// We can also enable tracing on this query
+		// We can also enable tracing on this statement
 		query.enableTracing();
 
 		ResultSet rs = session.execute(query);
@@ -222,7 +221,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 		// QueryTrace queryTrace = rs.getExecutionInfo().getQueryTrace();
 
 		for (Row row : rs) {
-
 			video.setVideoid(row.getUUID("videoid"));
 			video.setVideoname(row.getString("videoName"));
 			video.setUsername(row.getString("username"));
@@ -233,7 +231,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 			video.setTags(row.getList("tags", String.class));
 			video.setUpload_date(row.getDate("upload_date"));
 		}
-
 		return video;
 
 	}
@@ -247,19 +244,18 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	 * @param username
 	 * @return
 	 */
-	public List<Video> getVideosByUsernameUsingAsyncRead(String username) {
-		// Get a list of videoIds for one user from username
+	public List<Video> getVideosByUsernameUsingAsyncRead(String userName) {
+		// Get a list of videoIds for one user from userName
 		BoundStatement bs = getVideosByUsernamePreparedStatement.bind();
 
 		// We'll create a List of futures for each query we need to run.
 		List<ResultSetFuture> futures = new ArrayList<ResultSetFuture>();
 		List<Video> videos = new ArrayList<Video>();
 
-		bs.setString("username", username);
+		bs.setString("username", userName);
 
 		// First we will grab a list of videoIds
 		for (Row row : session.execute(bs)) {
-
 			// For each videoId we will create a query to get each Video
 			// As each is created, they are executed in the background
 			futures.add(session.executeAsync(getVideoByIDPreparedStatement
@@ -267,7 +263,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 		}
 
 		for (ResultSetFuture future : futures) {
-
 			// getUninterruptibly() is used when we don't mind the
 			// threads being interrupted. The option is to just use
 			// get and catch the exception
@@ -283,7 +278,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 				videos.add(video);
 			}
 		}
-
 		return videos;
 	}
 
@@ -295,7 +289,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	 * @return
 	 */
 	public List<Video> getVideosByTagsUsingAsyncReadThreads(List<String> tags) {
-
 		List<Video> videos = new ArrayList<Video>();
 
 		// ArrayList is not thread safe so not good for concurrent
@@ -345,7 +338,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 		}
 
 		for (ResultSetFuture future : videoFutures) {
-
 			// For each future we now will grab the result set of each video
 			for (Row row : future.getUninterruptibly()) {
 				Video video = new Video();
@@ -359,25 +351,22 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 				videos.add(video);
 			}
 		}
-
 		return videos;
 	}
 
 	public List<Video> getVideosByTagUsingAsyncRead(String tag) {
 
-		// Get a list of videoIds for one user from username
+		// Get a list of videoIds for one user from userName
 		BoundStatement bs = getVideosByTagPreparedStatement.bind(tag);
 		List<ResultSetFuture> futures = new ArrayList<ResultSetFuture>();
 		List<Video> videos = new ArrayList<Video>();
 
 		for (Row row : session.execute(bs)) {
-
 			futures.add(session.executeAsync(getVideoByIDPreparedStatement
 					.bind(row.getUUID("videoid"))));
 		}
 
 		for (ResultSetFuture future : futures) {
-
 			// Uninterrupted get
 			for (Row row : future.getUninterruptibly()) {
 				Video video = new Video();
@@ -390,9 +379,7 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 
 				videos.add(video);
 			}
-
 		}
-
 		return videos;
 	}
 
@@ -415,17 +402,14 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	public void setRatingForVideo(UUID videoId, int rating) {
-
 		// Very simple way of incrementing a count
 		session.execute("UPDATE video_rating SET rating_counter = rating_counter + 1, rating_total = rating_total + "
 				+ rating + " WHERE videoid = " + videoId);
-
 	}
 
 	// To set a comment, we'll use a batch to put in both comment tables at the
 	// same time.
-	public void setCommentForVideo(UUID videoId, String username, String comment) {
-
+	public void setCommentForVideo(UUID videoId, String userName, String comment) {
 		Date currentTimestamp = Calendar.getInstance().getTime();
 
 		// The Batch is created by adding multiple statements in order.
@@ -433,19 +417,18 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 		// Update and Delete work in the same batch.
 		Batch batch = batch().add(
 				insertInto("comments_by_video").value("videoId", videoId)
-						.value("username", username).value("comment", comment)
+						.value("username", userName).value("comment", comment)
 						.value("comment_ts", currentTimestamp)).add(
 				insertInto("comments_by_user").value("videoId", videoId)
-						.value("username", username).value("comment", comment)
+						.value("username", userName).value("comment", comment)
 						.value("comment_ts", currentTimestamp));
 
 		session.execute(batch);
 
 	}
 
-	public List<Comment> getCommentsByUsernameUsingPreparedStatement(
+	public List<Comment> getCommentsByUserNameUsingPreparedStatement(
 			String username) {
-
 		BoundStatement bs = getCommentByUsername.bind(username);
 
 		List<Comment> comments = new ArrayList<Comment>();
@@ -463,7 +446,6 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	public List<Comment> getCommentsByVideoIdUsingPreparedStatement(UUID videoId) {
-
 		BoundStatement bs = getCommentByVideoId.bind(videoId);
 		List<Comment> comments = new ArrayList<Comment>();
 
@@ -481,18 +463,15 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	public long getLastStopEvent(UUID videoId, String username) {
-
 		long video_timestamp = 0;
 
 		// Get a list of the last 5 events to find the last stop
-		Query query = select().column("event").column("video_timestamp")
+		Statement query = select().column("event").column("video_timestamp")
 				.from("videodb", "video_event").where(eq("videoId", videoId))
 				.and(eq("username", username)).limit(5);
-
 		session.execute(query);
 
 		for (Row row : session.execute(query)) {
-
 			// Find the first stop event, store it and stop the loop
 			if (row.getString("event").equalsIgnoreCase("stop")) {
 				video_timestamp = row.getLong("video_timestamp");
@@ -504,12 +483,10 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	}
 
 	// TODO simulated transaction
-	public void addCreditForUser(String username, int creditValue) {
-
+	public void addCreditForUser(String userName, int creditValue) {
 	}
 
 	// TODO simulated transaction
-	public void removeCreditForUser(String username, int creditValue) {
-
+	public void removeCreditForUser(String userName, int creditValue) {
 	}
 }

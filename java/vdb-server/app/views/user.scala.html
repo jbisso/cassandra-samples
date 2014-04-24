@@ -1,0 +1,14 @@
+@(theUser: com.datastax.videodb.pojo.User)
+
+@main("User profile") {
+
+    <h1>User profile</h1>
+    <ul>
+      <li>@theUser.getUserName()</li>
+      <li>@theUser.getFirstName()</li>
+      <li>@theUser.getLastName()</li>
+      <li>@theUser.getEmail()</li>
+      <li>@theUser.getCreatedDate()</li>
+    <ul>
+
+}

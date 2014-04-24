@@ -1,4 +1,4 @@
-package com.datastax.videodb.object;
+package com.datastax.videodb.pojo;
 
 import java.util.Date;
 import java.util.UUID;
