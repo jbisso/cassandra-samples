@@ -1,5 +1,7 @@
 package controllers;
 
+import play.data.DynamicForm;
+import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -32,9 +34,22 @@ public class Application extends Controller {
         if ( theUser != null ) {
             result = ok(user.render(theUser));
         } else {
-            result = ok("No user found.");
+            response().setContentType("text/html");
+            result = ok("<h1>User " + byUserName + " not found.</h1>");
         }
         return result;
     }
 
+    // e.g., http://localhost:9000/hello?firstname=Yann&lastname=Clacquot
+    
+    public static Result hello() {
+        DynamicForm requestData = Form.form().bindFromRequest();
+        String firstname = requestData.get("firstname");
+        String lastname = requestData.get("lastname");
+        return ok("Hello " + firstname + " " + lastname);
+    }
+    
+    public static Result submit() {
+        return ok("OK");
+    }
 }

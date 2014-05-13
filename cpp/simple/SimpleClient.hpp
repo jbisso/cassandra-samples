@@ -3,13 +3,7 @@
 
 #include <string>
 
-#include <boost/asio.hpp>
-#include <cql/cql.hpp>
-#include <cql/cql_connection.hpp>
-#include <cql/cql_session.hpp>
-#include <cql/cql_cluster.hpp>
-#include <cql/cql_builder.hpp>
-#include <cql/cql_result.hpp>
+#include <cassandra.h>
 
 namespace example 
 {

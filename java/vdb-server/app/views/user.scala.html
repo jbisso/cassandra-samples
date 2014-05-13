@@ -1,5 +1,7 @@
 @(theUser: com.datastax.videodb.pojo.User)
 
+@import helper._
+
 @main("User profile") {
 
     <h1>User profile</h1>
@@ -10,5 +12,10 @@
       <li>@theUser.getEmail()</li>
       <li>@theUser.getCreatedDate()</li>
     <ul>
-
+    
+    @helper.form(action = routes.Application.submit) {
+        @helper.inputText(myForm("username"))
+        @helper.inputPassword(myForm("password"))
+    }
+    
 }

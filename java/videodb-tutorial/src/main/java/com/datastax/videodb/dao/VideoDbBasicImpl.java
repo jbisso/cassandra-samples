@@ -107,17 +107,20 @@ public class VideoDbBasicImpl implements VideoDbDAO {
 	public User getUserByUserNameUsingString(String userName) {
 		User user = null;
 
-		ResultSet rs = session.execute("SELECT * FROM users WHERE username = '"
+		ResultSet results = session.execute("SELECT * FROM users WHERE username = '"
 				+ userName + "'");
 
 		// A result set has Rows which can be iterated over
-		for (Row row : rs) {
-			user.setUserName(userName);
-			user.setFirstName(row.getString("firstname"));
-			user.setLastName(row.getString("lastname"));
-			user.setEmail(row.getString("email"));
-			user.setPassword(row.getString("Password"));
-			user.setCreatedDate(row.getDate("created_date"));
+		for (Row row : results) {
+		    if (row != null ) {
+		        user = new User();
+		        user.setUserName(userName);
+	            user.setFirstName(row.getString("firstname"));
+	            user.setLastName(row.getString("lastname"));
+	            user.setEmail(row.getString("email"));
+	            user.setPassword(row.getString("Password"));
+	            user.setCreatedDate(row.getDate("created_date"));
+		    }
 		}
 		return user;
 	}

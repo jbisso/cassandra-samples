@@ -1,4 +1,15 @@
-This is your new Play application
+The Video DB Play application
 =====================================
 
-This file will be packaged with your application, when using `play dist`.
+A simple CRUD web application that works with the Video DB sample code.
+
+Steps
+------
+
+1. Start up a cluster with at least one node on 127.0.0.1
+
+2. Change to the sample dir and run the web app on its own server.
+
+$ cd /path/to/vdb-server
+
+$ play run

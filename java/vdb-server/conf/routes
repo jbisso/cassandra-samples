@@ -11,3 +11,5 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 # for Video DB app
 GET     /user/:byUserName           controllers.Application.getUser(byUserName: String)
 
+# test
+GET     /hello                      controllers.Application.hello()
