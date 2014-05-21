@@ -197,7 +197,7 @@ class BoundStatementsClient(SimpleClient):
             "Mick Jager",
             tags ))
         )
-        bound_statement = getSession().prepare("""
+        bound_statement = self.session.prepare("""
             INSERT INTO simplex.playlists
             (id, song_id, title, album, artist)
             VALUES (?, ?, ?, ?, ?);
