@@ -1,17 +1,13 @@
 OBJS = simple.o bound.o SimpleClient.o BoundStatementsClient.o
 CC = g++
-CPPLIBDIR = $HOME/work/repos/jbisso/cpp-driver
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG)
+CFLAGS = -Wall -c $(DEBUG) -std=c++11
 LFLAGS = -Wall $(DEBUG)
 
-all : simple bound
+all : demo
 
-simple : simple.o SimpleClient.o
-	$(CC) $(LFLAGS) simple.o SimpleClient.o -o simple -llibuv -llibssh2 -llibcassandra.0.7.0.dylib
-
-bound : bound.o BoundStatementsClient.o
-	$(CC) $(LFLAGS) bound.o SimpleClient.o BoundStatementsClient.o -o bound -lcql -lboost_system -lboost_thread-mt
+demo : demo.o
+	$(CC) $(LFLAGS) demo.o -o demo -llibuv -llibssh2 -llibcassandra.0.7.0.dylib
 
 clean : 
-	rm $(OBJS) simple bound
+	rm $(OBJS) demo
