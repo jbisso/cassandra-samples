@@ -163,65 +163,74 @@ class BoundStatementsClient(SimpleClient):
     A Cassandra client illustrating how to use prepared statements
     with the DataStax Python driver.
     """
+    
+    insert_song_prepared_statement = None
+    insert_playlist_prepared_statement = None
+    
+    def prepare_statements(self):
+        """
+        Called once to insure that the prepared statements 
+        are only prepared once per session.
+        """
+        self.insert_song_prepared_statement = self.session.prepare("""
+            INSERT INTO simplex.songs
+            (id, title, album, artist, tags)
+            VALUES (?, ?, ?, ?, ?);
+        """)
+        self.insert_playlist_prepared_statement = self.session.prepare("""
+            INSERT INTO simplex.playlists
+            (id, song_id, title, album, artist)
+            VALUES (?, ?, ?, ?, ?);
+        """)
 
     def load_data(self):
         """
         Override SimpleClient's function to use bound statements.
         """
-        bound_statement = self.session.prepare("""
-            INSERT INTO simplex.songs
-            (id, title, album, artist, tags)
-            VALUES (?, ?, ?, ?, ?);
-        """)
         tags = set(['jazz', '2013'])
-        self.session.execute(bound_statement.bind((
-            UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
+        self.session.execute(self.insert_song_prepared_statement,
+            [ UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
             "Joséphine Baker",
-            tags ))
+            tags ]
         )
         tags = set(['1996', 'birds'])
-        self.session.execute(bound_statement.bind((
-            UUID("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
+        self.session.execute(self.insert_song_prepared_statement,
+            [ UUID("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
             "Die Mösch",
             "In Gold'", 
             "Willi Ostermann",
-            tags ))
+            tags ]
         )
         tags = set(['1970', 'soundtrack'])
-        self.session.execute(bound_statement.bind((
-            UUID("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25"),
+        self.session.execute(self.insert_song_prepared_statement,
+            [ UUID("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25"),
             "Memo From Turner",
             "Performance",
             "Mick Jager",
-            tags ))
+            tags ]
         )
-        bound_statement = getSession().prepare("""
-            INSERT INTO simplex.playlists
-            (id, song_id, title, album, artist)
-            VALUES (?, ?, ?, ?, ?);
-        """)
-        self.session.execute(bound_statement.bind((
-            UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
+        self.session.execute(self.insert_playlist_prepared_statement,
+            [ UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
-            "Joséphine Baker"))
+            "Joséphine Baker" ]
         )
-        self.session.execute(bound_statement.bind((
-            UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
+        self.session.execute(self.insert_playlist_prepared_statement,
+            [ UUID("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
             "Die Mösch",
             "In Gold",
-            "Willi Ostermann"))
+            "Willi Ostermann" ]
         )
-        self.session.execute(bound_statement.bind((
-            UUID("3fd2bedf-a8c8-455a-a462-0cd3a4353c54"),
+        self.session.execute(self.insert_playlist_prepared_statement,
+            [ UUID("3fd2bedf-a8c8-455a-a462-0cd3a4353c54"),
             UUID("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25"),
             "Memo From Turner",
             "Performance",
-            "Mick Jager"))
+            "Mick Jager" ]
         )
         log.info('BoundStatementsClient: Schema loaded.')
 
@@ -248,11 +257,12 @@ class AsynchronousExample(SimpleClient):
 
 def main():
     logging.basicConfig()
-    client = SimpleClient()
-    # client = BoundStatementsClient()
+    # client = SimpleClient()
+    client = BoundStatementsClient()
     # client = AsynchronousExample()
     client.connect(['127.0.0.1'])
     client.create_schema()
+    client.prepare_statements()
     client.load_data()
     client.query_schema()
     client.pause()
