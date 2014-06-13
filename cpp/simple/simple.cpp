@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "SimpleClient.hpp"
 
 int main(int argc, char**)
@@ -9,8 +11,13 @@ int main(int argc, char**)
     client.createSchema();
     client.loadData();
     client.querySchema();
+    /*
     client.updateSchema();
-    client.dropSchema("simplex");
+    */
+    std::cout << "Press <Return> to continue.";
+    std::getchar();
+    
+    client.dropSchema();
     client.close();
     return 0;
 }
