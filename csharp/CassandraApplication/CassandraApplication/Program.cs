@@ -11,10 +11,11 @@ namespace CassandraApplication
         static void Main(string[] args)
         {
             //SimpleClient client = new SimpleClient();
-            //BoundStatementsClient client = new BoundStatementsClient();
-            AsynchronousClient client = new AsynchronousClient();
+            BoundStatementsClient client = new BoundStatementsClient();
+            //AsynchronousClient client = new AsynchronousClient();
             client.Connect("127.0.0.1");
             client.CreateSchema();
+            client.PrepareStatements();
             client.LoadData();
             client.QuerySchema();
             Console.ReadKey();
