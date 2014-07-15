@@ -11,10 +11,8 @@ int main(int argc, char**)
     client.createSchema();
     client.loadData();
     client.querySchema();
-    /*
     client.updateSchema();
-    */
-    std::cout << "Press <Return> to continue.";
+    std::cout << "\nPress <Return> to continue.\n";
     std::getchar();
     
     client.dropSchema();

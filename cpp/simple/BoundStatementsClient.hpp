@@ -7,8 +7,16 @@ namespace example
 
 class BoundStatementsClient : public SimpleClient
 {
+private:
+    static final String INSERT_SONGS_DATA_PREPARED = 
+        "INSERT INTO simplex.songs (id, title, album, artist, tags) VALUES (?, ?, ?, ?, ?);";
+    static final String INSERT_PLAYLISTS_DATA_PREPARED = 
+        "INSERT INTO simplex.playlists (id, song_id, title, album, artist) VALUES (?, ?, ?, ?, ?);";
+    PreparedStatement insertSongsDataStatement;
+    PreparedStatement insertPlaylistsDataStatement;
 
-public:    
+public:
+    prepareStatements();
     virtual void loadData();
     
     BoundStatementsClient();

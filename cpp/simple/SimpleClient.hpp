@@ -14,7 +14,7 @@ class SimpleClient
 private:
     CassSession* session;
     CassCluster* cluster;
-    inline CassError executeStatement(const char* cqlStatement, const CassResult* results = NULL);
+    inline CassError executeStatement(const char* cqlStatement, const CassResult** results = NULL);
 public:
     inline CassSession* getSession() { return session; }
     
@@ -22,12 +22,9 @@ public:
     CassError createSchema();
     virtual CassError loadData();
     CassError querySchema();
-    
+    CassError updateSchema();
     CassError dropSchema();
     void close();
-    /*
-    void updateSchema();
-    */
     
     SimpleClient() { }
     ~SimpleClient() { }

@@ -19,7 +19,7 @@ inline CassError printError(CassError error)
     return error;
 }
 
-inline CassError SimpleClient::executeStatement(const char* cqlStatement, const CassResult* results /* = NULL */)
+inline CassError SimpleClient::executeStatement(const char* cqlStatement, const CassResult** results /* = NULL */)
 {
     CassError rc = CASS_OK;
     CassFuture* result_future = NULL;
@@ -37,7 +37,7 @@ inline CassError SimpleClient::executeStatement(const char* cqlStatement, const 
         cout << "Statement " << cqlStatement << " executed successully." << "\n";
         if ( results != NULL )
         {
-            results = cass_future_get_result(result_future);
+            *results = cass_future_get_result(result_future);
         }
     } 
     else 
@@ -115,11 +115,11 @@ CassError SimpleClient::loadData()
 CassError SimpleClient::querySchema()
 {
     CassError rc = CASS_OK;
-    CassResult* results;
+    const CassResult* results;
     
     cout << "Querying the simplex.playlists table." << endl;
     
-    rc = executeStatement("SELECT title, artist, album FROM simplex.playlists WHERE id = 2cc9ccb7-6221-4ccb-8387-f22b6a1b354d;", results);
+    rc = executeStatement("SELECT title, artist, album FROM simplex.playlists WHERE id = 2cc9ccb7-6221-4ccb-8387-f22b6a1b354d;", &results);
     
     CassIterator* rows = cass_iterator_from_result(results);
     
@@ -135,7 +135,7 @@ CassError SimpleClient::querySchema()
             cass_value_get_string(cass_row_get_column(row, 1), &artist);
             cass_value_get_string(cass_row_get_column(row, 2), &album);
             
-            cout << "title: " << title.data << " artist: " << artist.data << " album:" << album.data << "\n";
+            cout << "title: " << title.data << ", artist: " << artist.data << ", album: " << album.data << "\n";
         }
         cass_result_free(results);
         cass_iterator_free(rows);
@@ -144,49 +144,59 @@ CassError SimpleClient::querySchema()
     return rc;
 }
 
-/*
-void SimpleClient::updateSchema() 
+CassError SimpleClient::updateSchema() 
 {
+    CassError rc = CASS_OK;
+    const CassResult* results;
+    
     cout << "Updating the simplex.songs table." << endl;
-    shared_ptr<cql::cql_query_t> update_songs_statement(new cql::cql_query_t(
-        string("UPDATE simplex.songs ") +
-            "SET tags = tags + { 'entre-deux-guerres' } " +
-            "WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;"
-            ));
-    boost::shared_future<cql::cql_future_result_t> future = session->query(update_songs_statement);
-    future.wait();
+    rc = executeStatement("UPDATE simplex.songs SET tags = tags + { 'entre-deux-guerres' } WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;");
+    
+    if ( rc != CASS_OK )
+    {
+        return rc;
+    }
     
     cout << "Querying the simplex.songs table." << endl;
-    shared_ptr<cql::cql_query_t> query_songs_statement(new cql::cql_query_t(
-        string("SELECT * FROM simplex.songs ") +
-        "WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;"
-        ));
-    future = session->query(query_songs_statement);
-    future.wait();
-    shared_ptr<cql::cql_result_t> result = future.get().result;
-    cout << TITLE_COLUMN << "\t" << ALBUM_COLUMN << "\t" << ARTIST_COLUMN << "\t" << TAGS_COLUMN << endl;
-    if ( result ) 
+    rc = executeStatement("SELECT title, artist, album, tags FROM simplex.songs WHERE id = 756716f7-2e54-4715-9f00-91dcbea6cf50;", &results);
+    
+    CassIterator* rows = cass_iterator_from_result(results);
+    
+    if ( rc == CASS_OK ) 
     {
-        while ( result->next() ) 
+        cout << TITLE_COLUMN << "\t" << ALBUM_COLUMN << "\t" << ARTIST_COLUMN << "\t" << TAGS_COLUMN << endl;
+        while ( cass_iterator_next(rows) ) 
         {
-            string title, artist, album, tag;
-            cql::cql_set_t* tags;
-            result->get_string(TITLE_COLUMN, title);
-            result->get_string(ALBUM_COLUMN, artist);
-            result->get_string(ARTIST_COLUMN, album);
-            cout << title << "\t" << album << "\t" << artist << "\t" << "{";
-            if (result->get_set(TAGS_COLUMN, &tags) )
+            const CassRow* row = cass_iterator_get_row(rows);
+            
+            CassString title, artist, album;
+            
+            cass_value_get_string(cass_row_get_column(row, 0), &title);
+            cass_value_get_string(cass_row_get_column(row, 1), &artist);
+            cass_value_get_string(cass_row_get_column(row, 2), &album);
+            cout << title.data << "\t" << artist.data << "\t" << album.data << "\t{ ";
+            const CassValue* tags = cass_row_get_column(row, 3);
+            CassIterator* tagsIter = cass_iterator_from_collection(tags);
+            CassString tag;
+            if ( cass_iterator_next(tagsIter) )
             {
-                for ( int i = 0; i < tags->size(); ++i )
-                {
-                    cout << " " << tags->get_string(i, tag);
-                }
+                cass_value_get_string( cass_iterator_get_value(tagsIter), &tag );
+                cout << tag.data;
             }
-            cout << " }" << endl;
+            while ( cass_iterator_next(tagsIter) )
+            {
+                cass_value_get_string( cass_iterator_get_value(tagsIter), &tag );
+                cout << ", " << tag.data;
+            }
+            cout << " }\n";
+            cass_iterator_free(tagsIter);
         }
+        cass_result_free(results);
+        cass_iterator_free(rows);
     }
+    
+    return rc;
 }
-*/
 
 CassError SimpleClient::dropSchema() 
 {
@@ -212,6 +222,7 @@ CassError SimpleClient::dropSchema()
 void SimpleClient::close() 
 {
     cout << "Closing down cluster connection." << "\n";
+    cass_session_close(session);
     cass_cluster_free(cluster);
 }
 
