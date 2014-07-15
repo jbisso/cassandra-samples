@@ -15,14 +15,14 @@ using namespace std;
 using namespace cql;
 using boost::shared_ptr;
 
+void prepareStatements()
+{
+}
+
 void BoundStatementsClient::loadData()
 {
-    boost::shared_ptr<cql::cql_query_t> unbound_select(
-        new cql::cql_query_t(
-            string("INSERT INTO songs ") +
-            "(id, title, album, artist) " +
-            "VALUES (?, ?, ?, ?);"
-            ));
+    "INSERT INTO songs (id, title, album, artist) VALUES (?, ?, ?, ?);");
+    
     // compile the parametrized query on the server
     boost::shared_future<cql::cql_future_result_t> future = getSession()->prepare(unbound_select);
     future.wait();

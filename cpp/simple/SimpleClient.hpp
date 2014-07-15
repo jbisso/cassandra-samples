@@ -12,20 +12,21 @@ class SimpleClient
 {
 
 private:
-    boost::shared_ptr<cql::cql_session_t> session;
-    boost::shared_ptr<cql::cql_cluster_t> cluster;
+    CassSession* session;
+    CassCluster* cluster;
+    inline CassError executeStatement(const char* cqlStatement, const CassResult** results = NULL);
 public:
-    inline boost::shared_ptr<cql::cql_session_t> getSession() { return session; }
+    inline CassSession* getSession() { return session; }
     
-    void connect(const std::string nodes);
-    void createSchema();
-    virtual void loadData();
-    void querySchema();
-    void updateSchema();
-    void dropSchema(const std::string schema);
+    CassError connect(const std::string nodes);
+    CassError createSchema();
+    virtual CassError loadData();
+    CassError querySchema();
+    CassError updateSchema();
+    CassError dropSchema();
     void close();
     
-    SimpleClient();
+    SimpleClient() { }
     ~SimpleClient() { }
     
 };
