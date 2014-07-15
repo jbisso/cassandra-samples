@@ -27,7 +27,7 @@ namespace VideoDbApplication.dao
         private static const String GET_COMMENT_BY_USERNAME = "SELECT videoid,username,comment_ts, comment FROM  comments_by_user WHERE username = ?";
 
         public Cluster cluster { set; get; }
-	    public Session session { set; get; }
+	    public ISession session { set; get; }
 
 	    private PreparedStatement getUserByNamePreparedStatement;
 	    private PreparedStatement setUser;

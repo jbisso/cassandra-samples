@@ -33,16 +33,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cassandra">
-      <HintPath>..\..\..\..\..\datastax\csharp-driver\Cassandra\bin\Debug\Cassandra.dll</HintPath>
+      <HintPath>..\..\..\..\..\datastax\csharp-driver\src\Cassandra\bin\Release\Cassandra.dll</HintPath>
     </Reference>
     <Reference Include="Cassandra.Data">
-      <HintPath>..\..\..\..\..\datastax\csharp-driver\Cassandra.Data\bin\Debug\Cassandra.Data.dll</HintPath>
+      <HintPath>..\..\..\..\..\datastax\csharp-driver\src\Cassandra.Data\bin\Release\Cassandra.Data.dll</HintPath>
     </Reference>
     <Reference Include="Cassandra.Data.Linq">
-      <HintPath>..\..\..\..\..\datastax\csharp-driver\Cassandra.Data.Linq\bin\Debug\Cassandra.Data.Linq.dll</HintPath>
+      <HintPath>..\..\..\..\..\datastax\csharp-driver\src\Cassandra.Data.Linq\bin\Release\Cassandra.Data.Linq.dll</HintPath>
     </Reference>
     <Reference Include="LZ4">
-      <HintPath>..\..\..\..\..\datastax\csharp-driver\Cassandra\bin\Debug\LZ4.dll</HintPath>
+      <HintPath>..\..\..\..\..\datastax\csharp-driver\src\Cassandra\bin\Release\LZ4.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
