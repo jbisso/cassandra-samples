@@ -11,16 +11,19 @@ namespace CassandraApplication
         static void Main(string[] args)
         {
             //SimpleClient client = new SimpleClient();
-            BoundStatementsClient client = new BoundStatementsClient();
+            //BoundStatementsClient client = new BoundStatementsClient();
             //AsynchronousClient client = new AsynchronousClient();
-            client.Connect("127.0.0.1");
+            TwoOneFeatures client = new TwoOneFeatures();
+            //client.Connect("127.0.0.1");
+            client.Connect("ec2-54-176-125-19.us-west-1.compute.amazonaws.com");
             client.CreateSchema();
             client.PrepareStatements();
             client.LoadData();
             client.QuerySchema();
+            Console.WriteLine("Hit return to quit.");
             Console.ReadKey();
-            client.DropSchema("simplex");
-            client.Close();
+            //client.DropSchema("simplex");
+            client.DropSchema("complex");
             client.Close();
         }
     }
