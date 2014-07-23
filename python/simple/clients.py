@@ -15,11 +15,12 @@ class SimpleClient:
     Python driver.
     """
     session = None
+    cluster = None
 
     def connect(self, nodes):
-        cluster = Cluster(nodes)
-        metadata = cluster.metadata
-        self.session = cluster.connect()
+        self.cluster = Cluster(nodes, protocol_version=3)
+        metadata = self.cluster.metadata
+        self.session = self.cluster.connect()
         log.info('Connected to cluster: ' + metadata.cluster_name)
         for host in metadata.all_hosts():
             log.info('Datacenter: %s; Host: %s; Rack: %s',
