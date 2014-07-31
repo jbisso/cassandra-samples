@@ -1,5 +1,7 @@
 package com.example.cassandra;
 
+import java.io.IOException;
+
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.ResultSet;
@@ -181,6 +183,15 @@ public class SimpleClient {
    // used by the workaround method in the BoundStatementsclient child class.
    void setSession(Session session) {
    	this.session = session;
+   }
+   
+   public void pause() {
+       System.out.println("Press any key to continue.");
+       try {
+           System.in.read();
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
    }
 
    /**

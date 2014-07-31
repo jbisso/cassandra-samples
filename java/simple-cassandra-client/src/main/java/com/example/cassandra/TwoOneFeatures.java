@@ -15,12 +15,13 @@ import com.datastax.driver.core.UserType;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.UDTMapper;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 public class TwoOneFeatures extends SimpleClient {
     private static String[][] FAKE_USER_DATA = {
         { "756716f7-2e54-4715-9f00-91dcbea6cf50", "John Doe" },
         { "f6071e72-48ec-4fcb-bf3e-379c8a696488", "Jane Quux" },
+        { "93031620-12ae-11e4-9191-0800200c9a66", "Gary Binary" },
         //{ "", "", "", "" },
     };
     private static String[][] FAKE_ADDRESS_DATA = {
@@ -31,14 +32,16 @@ public class TwoOneFeatures extends SimpleClient {
     };
     
     private static String INSERT_USER = "INSERT INTO complex.users (id, name, addresses) " +
-        "VALUES (:id, :name, :addresses);";
+        "VALUES (?, ?, ?);";
     private PreparedStatement insertUserPreparedStatement;
+    private PreparedStatement selectUserPreparedStatement;
 
     public TwoOneFeatures() {
     }
         
     public void prepareStatements() {
         insertUserPreparedStatement = getSession().prepare(INSERT_USER);
+        selectUserPreparedStatement = getSession().prepare("SELECT * FROM complex.users WHERE id = ?;");
     }
     
     public void createSchema() {
@@ -47,9 +50,9 @@ public class TwoOneFeatures extends SimpleClient {
             "CREATE KEYSPACE complex WITH replication " + 
                 "= {'class':'SimpleStrategy', 'replication_factor':3};");
         getSession().execute(
-            "CREATE TYPE phone (" +
+            "CREATE TYPE complex.phone (" +
                     "alias text," +
-                    "number text)"
+                    "number text);"
             );
         getSession().execute(
             "CREATE TYPE complex.address (" +
@@ -94,6 +97,7 @@ public class TwoOneFeatures extends SimpleClient {
     }
     
     public void loadData() {
+        System.out.println("Loading data into complex schema with queries.");
         for (int i = 0; i < 2; ++i ) {
             User user = getUser(i);
             BoundStatement boundStatement = insertUserPreparedStatement.bind(
@@ -105,10 +109,7 @@ public class TwoOneFeatures extends SimpleClient {
     }
     
     public void loadDataUsingRaw() {
-        PreparedStatement insertUserPreparedStatement
-            = getSession().prepare("INSERT INTO users (id, addresses) VALUES (?, ?);");
-        PreparedStatement selectUserPreparedStatement
-            = getSession().prepare("SELECT * FROM users WHERE id = ?;");
+        System.out.println("Loading data into complex schema using raw API.");
 
          UserType addressUDT = getSession().getCluster()
             .getMetadata().getKeyspace("complex").getUserType("address");
@@ -122,34 +123,76 @@ public class TwoOneFeatures extends SimpleClient {
             .setString("alias", "work")
             .setString("number", "0698265251");
     
-         UDTValue addresses = addressUDT.newValue()
+         UDTValue address = addressUDT.newValue()
             .setString("street", "1600 Pennsylvania Ave NW")
             .setInt("zip_code", 20500)
-            .setSet("phones", ImmutableSet.of(phone1, phone2));
+            .setList("phones", ImmutableList.of(phone1, phone2));
+         Map<String, UDTValue> addresses = new HashMap<String, UDTValue>();
+         addresses.put("Work", address);
 
          UUID userId = UUID.fromString("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25");
-         getSession().execute(insertUserPreparedStatement.bind(userId, addresses));
+         getSession().execute(insertUserPreparedStatement.bind(userId, "G. Binary", addresses));
          
          Row row = getSession().execute(selectUserPreparedStatement.bind(userId)).one();
-         for ( Address address : row.getMap("addresses", String.class, Address.class).values() ) {
-             System.out.println("Zip: " + address.getZipCode());
+         for ( UDTValue addr : row.getMap("addresses", String.class, UDTValue.class).values() ) {
+             System.out.println("Zip: " + addr.getInt("zip_code"));
          }
+         
+         // Direct field manipulation
+         //ResultSet rs = getSession().execute("SELECT addresses['Work'] FROM complex.users WHERE id = ?", userId);
+         //int zip = rs.one().getInt("addresses['Work'].zip_code");
     }
     
     public void loadDataUsingMapper() {
-        System.out.println("Loading data into complex schema.");
+        System.out.println("Loading data into complex schema using mapping API.");
         Mapper<User> mapper = new MappingManager(getSession()).mapper(User.class);
-        User user = getUser(0);
+        User user = getUser(2);
+        System.out.println("name: " + user.getName());
         mapper.save(user);
     }
     
     public void testMappings() {
+        System.out.println("Testing mapper.");
         Mapper<Account> mapper = new MappingManager(getSession()).mapper(Account.class);
         Account account = new Account("John Doe", "jd@example.com");
         mapper.save(account);
         Account whose = mapper.get("jd@example.com");
         System.out.println("Account name: " + whose.getName());
         mapper.delete(account);
+    }
+    
+    public void mapUdtToField() {
+        getSession().execute(
+                "CREATE TABLE complex.customers (" +
+                    "email text PRIMARY KEY," +
+                    "phone_number phone);"
+                );
+        PreparedStatement preparedStatement = getSession()
+                .prepare("INSERT INTO complex.customers (email, phone_number) VALUES (?, ?);");
+        UserType phoneUDT = getSession().getCluster()
+                .getMetadata()
+                .getKeyspace("complex")
+                .getUserType("phone");
+        UDTValue phone = phoneUDT.newValue()
+                .setString("alias", "home")
+                .setString("number", "707-555-7654");
+        getSession().execute(preparedStatement.bind("grex@example.com", phone));
+        ResultSet results = getSession()
+                .execute("SELECT phone_number.number FROM " + 
+                        "complex.customers WHERE email = 'grex@example.com';");
+        String number = results.one().getString("phone_number.number");
+        System.out.println("Phone number: " + number);
+        
+        // Update
+        preparedStatement = getSession()
+                .prepare("UPDATE complex.customers SET phone_number = " +
+                        "{ number : ? } WHERE email = 'grex@example.com';");
+        getSession().execute(preparedStatement.bind("510-555-1209"));
+        results = getSession()
+                .execute("SELECT * FROM " + 
+                        "complex.customers WHERE email = 'grex@example.com';");
+        UDTValue value = results.one().getUDTValue("phone_number");
+        System.out.println("Phone number: " + value.getString("number"));
     }
     
     public void querySchema() {
@@ -169,12 +212,16 @@ public class TwoOneFeatures extends SimpleClient {
 
     public static void main(String[] args) {
         TwoOneFeatures client = new TwoOneFeatures();
-        client.connect("ec2-54-176-125-19.us-west-1.compute.amazonaws.com");
+        client.connect("ec2-184-72-7-12.us-west-1.compute.amazonaws.com");
         client.createSchema();
         client.prepareStatements();
         client.loadData();
         client.querySchema();
-        //client.dropSchema("complex");
+        client.loadDataUsingRaw();
+        client.mapUdtToField();
+        client.pause();
+        client.loadDataUsingMapper();
+        client.dropSchema("complex");
         client.close();
     }
 }

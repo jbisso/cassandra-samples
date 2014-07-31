@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cassandra.cluster import Cluster
+from cassandra.encoder import cql_encode_tuple
 from cassandra.query import PreparedStatement
 from collections import namedtuple
 from uuid import UUID
@@ -65,17 +66,29 @@ class TwoOneFeatures(SimpleClient):
             { 'id' : UUID('756716f7-2e54-4715-9f00-91dcbea6cf50'), 'name' : 'John Doe', 'addresses' : addresses }
         )
         self.session.execute(bound_statement)
+        
+    def test_tuples(self):
+        self.session.execute("""
+            CREATE TABLE complex.tuple_test (
+                the_key int PRIMARY KEY,
+                the_tuple tuple<int, text, float>)
+        """)
+        k = 1
+        t = (0, 'abc', 1.0)
+        prepared = self.session.prepare("INSERT INTO complex.tuple_test(the_key, the_tuple) VALUES (?, ?);")
+        self.session.execute(prepared, parameters=(k, t))
 
 # 
 
 def main():
     logging.basicConfig()
     client = TwoOneFeatures()
-    client.connect(['ec2-54-176-125-19.us-west-1.compute.amazonaws.com'])
+    client.connect(['ec2-184-72-7-12.us-west-1.compute.amazonaws.com'])
     client.create_schema()
     client.prepare_statements()
     client.load_data()
     #client.query_schema()
+    client.test_tuples()
     client.pause()
     #client.update_schema()
     client.drop_schema('complex')
