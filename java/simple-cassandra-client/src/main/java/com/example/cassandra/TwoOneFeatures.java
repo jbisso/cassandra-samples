@@ -70,7 +70,8 @@ public class TwoOneFeatures extends SimpleClient {
             );
         getSession().execute("CREATE TABLE complex.accounts (" +
                 "email text PRIMARY KEY," +
-                "name text);"
+                "name text," +
+                "addr address);"
             );
     }
     
@@ -79,8 +80,9 @@ public class TwoOneFeatures extends SimpleClient {
         result.setStreet(FAKE_ADDRESS_DATA[number][0]);
         result.setCity(FAKE_ADDRESS_DATA[number][1]);
         result.setZipCode(Integer.parseInt(FAKE_ADDRESS_DATA[number][2]));
-        List<String> phones = new ArrayList<String>();
-        phones.add(FAKE_ADDRESS_DATA[number][3]);
+        List<Phone> phones = new ArrayList<Phone>();
+        Phone phone = new Phone("home", FAKE_ADDRESS_DATA[number][3]);
+        phones.add(phone);
         result.setPhones(phones);
         return result;
     }
@@ -154,7 +156,11 @@ public class TwoOneFeatures extends SimpleClient {
     public void testMappings() {
         System.out.println("Testing mapper.");
         Mapper<Account> mapper = new MappingManager(getSession()).mapper(Account.class);
-        Account account = new Account("John Doe", "jd@example.com");
+        Phone phone = new Phone("home", "707-555-3537");
+        List<Phone> phones = new ArrayList<Phone>();
+        phones.add(phone);
+        Address address = new Address("25800 Arnold Drive", "Sonoma", 95476, phones);
+        Account account = new Account("John Doe", "jd@example.com", address);
         mapper.save(account);
         Account whose = mapper.get("jd@example.com");
         System.out.println("Account name: " + whose.getName());
@@ -212,13 +218,14 @@ public class TwoOneFeatures extends SimpleClient {
 
     public static void main(String[] args) {
         TwoOneFeatures client = new TwoOneFeatures();
-        client.connect("ec2-184-72-7-12.us-west-1.compute.amazonaws.com");
+        client.connect("127.0.0.1");
         client.createSchema();
         client.prepareStatements();
         client.loadData();
         client.querySchema();
         client.loadDataUsingRaw();
         client.mapUdtToField();
+        client.testMappings();
         client.pause();
         client.loadDataUsingMapper();
         client.dropSchema("complex");

@@ -1,6 +1,7 @@
 
 package com.example.cassandra;
 
+import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
 import com.google.common.base.Objects;
@@ -10,13 +11,16 @@ public class Account {
     @PartitionKey
     private String email;
     private String name;
+    @Column (name = "addr")
+    private Address address;
 
     public Account() {
     }
 
-    public Account(String name, String email) {
+    public Account(String name, String email, Address address) {
         this.name = name;
         this.email = email;
+        this.address = address;
     }
 
     public String getName() {
@@ -35,6 +39,14 @@ public class Account {
         this.email = email;
     }
     
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Account) {

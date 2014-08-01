@@ -9,15 +9,19 @@ import com.google.common.base.Objects;
 @UDT (keyspace = "complex", name = "address")
 public class Address {
     private String street;
-    
     private String city;
-    
     @Field (name = "zip_code")
     private int zipCode;
-    
-    private List<String> phones;
+    private List<Phone> phones;
 
     public Address() {
+    }
+
+    public Address(String street, String city, int zipCode, List<Phone> phones) {
+        this.street = street;
+        this.city = city;
+        this.zipCode = zipCode;
+        this.phones = phones;
     }
 
     public String getStreet() {
@@ -44,11 +48,11 @@ public class Address {
         this.zipCode = zipCode;
     }
 
-    public List<String> getPhones() {
+    public List<Phone> getPhones() {
         return phones;
     }
 
-    public void setPhones(List<String> phones) {
+    public void setPhones(List<Phone> phones) {
         this.phones = phones;
     }
     

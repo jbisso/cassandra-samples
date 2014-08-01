@@ -1,5 +1,8 @@
 package com.example.cassandra;
 
+import com.datastax.driver.mapping.annotations.UDT;
+
+@UDT (keyspace = "complex", name = "phone")
 public class Phone {
     private String alias;
     private String number;
