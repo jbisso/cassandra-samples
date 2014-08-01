@@ -1,0 +1,18 @@
+GIT
+  remote: https://github.com/riptano/ruby-driver
+  revision: 85fa33de53e2f6e153799c1d6e77ae9139223279
+  branch: datastax-api
+  specs:
+    cql-rb (2.0.3)
+      ione (= 1.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ione (1.0.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  cql-rb!

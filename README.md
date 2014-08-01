@@ -9,7 +9,8 @@ Languages so far
 * Clojure
 * [C#](http://www.datastax.com/documentation/developer/csharp-driver/1.0/)
 * [Java](http://www.datastax.com/documentation/developer/java-driver/1.0/)
-* Python
+* [Python](http://www.datastax.com/documentation/developer/python-driver/1.0/)
+* Ruby
 
 Links
 -----

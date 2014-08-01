@@ -25,14 +25,14 @@ public class BoundStatementsClient extends SimpleClient {
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise'",
             "Bye Bye Blackbird'",
-            "Joséphine Baker",
+            "Jos√©phine Baker",
             tags ) );
       tags = new HashSet<String>();
       tags.add("1996");
       tags.add("birds");
       getSession().execute(boundStatement.bind(
             UUID.fromString("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die Mösch",
+            "Die M√∂sch",
             "In Gold'", 
             "Willi Ostermann",
             tags) );
@@ -56,11 +56,11 @@ public class BoundStatementsClient extends SimpleClient {
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise",
             "Bye Bye Blackbird",
-            "Joséphine Baker") );
+            "Jos√©phine Baker") );
       getSession().execute(boundStatement.bind(
             UUID.fromString("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d"),
             UUID.fromString("f6071e72-48ec-4fcb-bf3e-379c8a696488"),
-            "Die Mösch",
+            "Die M√∂sch",
             "In Gold",
             "Willi Ostermann") );
       getSession().execute(boundStatement.bind(
