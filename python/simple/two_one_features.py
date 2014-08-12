@@ -61,7 +61,7 @@ class TwoOneFeatures(SimpleClient):
     def load_data(self):
         log.info('Loading data into schema.')
         address = Address('123 Arnold Drive', 'Sonoma', 95476, ['707-555-1234', '800-555-9876'])
-        addresses = {'Home' : address }
+        addresses = { 'Home' : address }
         bound_statement = self.insert_user_prepared_statement.bind(
             { 'id' : UUID('756716f7-2e54-4715-9f00-91dcbea6cf50'), 'name' : 'John Doe', 'addresses' : addresses }
         )
@@ -83,7 +83,7 @@ class TwoOneFeatures(SimpleClient):
 def main():
     logging.basicConfig()
     client = TwoOneFeatures()
-    client.connect(['ec2-184-72-7-12.us-west-1.compute.amazonaws.com'])
+    client.connect(['127.0.0.1'])
     client.create_schema()
     client.prepare_statements()
     client.load_data()

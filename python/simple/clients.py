@@ -9,7 +9,7 @@ import logging
 log = logging.getLogger()
 log.setLevel('INFO')
 
-class SimpleClient:
+class SimpleClient(object):
     """
     A simple Cassandra client illustrating how to use the DataStax 
     Python driver.
