@@ -40,7 +40,7 @@ public class SimpleClient {
    public void createSchema() {
       session.execute(
             "CREATE KEYSPACE simplex WITH replication " + 
-            "= {'class':'SimpleStrategy', 'replication_factor':3};");
+            "= {'class' : 'SimpleStrategy', 'replication_factor' : 3};");
       // create songs and playlist tables
       session.execute(
             "CREATE TABLE simplex.songs (" +
@@ -186,7 +186,11 @@ public class SimpleClient {
    }
    
    public void pause() {
-       System.out.println("Press any key to continue.");
+       pause("Press <CR> to continue.");
+   }
+       
+   public void pause(String message) {
+       System.out.println(message);
        try {
            System.in.read();
        } catch (IOException e) {
@@ -215,6 +219,7 @@ public class SimpleClient {
       client.loadData();
       client.querySchema();
       client.updateSchema();
+      client.pause();
       client.dropSchema("simplex");
       client.close();
    }
