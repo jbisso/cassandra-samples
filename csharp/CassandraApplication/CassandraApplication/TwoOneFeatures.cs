@@ -42,7 +42,7 @@ namespace CassandraApplication
                 "CREATE TABLE users (" +
                     "id uuid PRIMARY KEY," +
                     "name text," +
-                    "addresses map<text, address>);"
+                    "addresses map<text, frozen<address>>);"
                 );
             // map the UDT to the class
             Session.UserDefinedTypes.Define(

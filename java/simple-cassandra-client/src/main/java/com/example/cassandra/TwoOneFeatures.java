@@ -59,19 +59,19 @@ public class TwoOneFeatures extends SimpleClient {
                     "street text," +
                     "city text," +
                     "zip_code int," +
-                    "phones list<phone>);"
+                    "phones list<frozen<phone>>);"
             );
         // create a table that uses it
         getSession().execute(
             "CREATE TABLE complex.users (" +
                 "id uuid PRIMARY KEY," +
                 "name text," +
-                "addresses map<text, address>);"
+                "addresses map<text, frozen<address>>);"
             );
         getSession().execute("CREATE TABLE complex.accounts (" +
                 "email text PRIMARY KEY," +
                 "name text," +
-                "addr address);"
+                "addr frozen<address>);"
             );
     }
     
@@ -171,7 +171,7 @@ public class TwoOneFeatures extends SimpleClient {
         getSession().execute(
                 "CREATE TABLE complex.customers (" +
                     "email text PRIMARY KEY," +
-                    "phone_number phone);"
+                    "phone_number frozen<phone>);"
                 );
         PreparedStatement preparedStatement = getSession()
                 .prepare("INSERT INTO complex.customers (email, phone_number) VALUES (?, ?);");

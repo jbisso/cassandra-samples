@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from cassandra.cluster import Cluster
-from cassandra.encoder import cql_encode_tuple
+#from cassandra.encoder import cql_encode_tuple
 from cassandra.query import PreparedStatement
 from collections import namedtuple
 from uuid import UUID
@@ -10,7 +10,7 @@ import logging
 from clients import SimpleClient
 
 log = logging.getLogger()
-log.setLevel('INFO')   
+log.setLevel('INFO')
 
 # Address = namedtuple('address', ('street', 'city', 'zip_code', 'phones'))
 
@@ -47,7 +47,7 @@ class TwoOneFeatures(SimpleClient):
             CREATE TABLE complex.users (
                 id uuid PRIMARY KEY,
                 name text,
-                addresses map<text, address>);
+                addresses map<text, frozen<address>>);
         """)
         self.cluster.register_user_type("complex", "address", Address)
     
@@ -71,7 +71,7 @@ class TwoOneFeatures(SimpleClient):
         self.session.execute("""
             CREATE TABLE complex.tuple_test (
                 the_key int PRIMARY KEY,
-                the_tuple tuple<int, text, float>)
+                the_tuple frozen<tuple<int, text, float>>)
         """)
         k = 1
         t = (0, 'abc', 1.0)
