@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require 'bundler/setup'
-require 'cql'
+require 'cassandra'
 
 module CassandraExamples
     class SimpleClient
@@ -12,9 +12,7 @@ module CassandraExamples
         
         def connect(node)
             puts "Connecting to cluster."
-            @cluster = Cql.cluster
-                .with_contact_points(node)
-                .build
+            @cluster = Cassandra.connect(node)
             @cluster.hosts.each do |host|
               puts "Host #{host.ip}: id=#{host.id} datacenter=#{host.datacenter} rack=#{host.rack}"
             end

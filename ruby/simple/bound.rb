@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 require 'bundler/setup'
-require 'cql'
+require 'cassandra'
 require_relative 'cassandraExamples'
 
 module CassandraExamples

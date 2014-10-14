@@ -1,5 +1,4 @@
 source 'https://rubygems.org/'
 
-gem 'cql-rb', :git => 'https://github.com/riptano/ruby-driver', :branch => 'datastax-api'
-
+gem 'cassandra-driver', :git => 'https://github.com/datastax/ruby-driver.git'
 

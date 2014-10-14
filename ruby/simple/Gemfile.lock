@@ -1,18 +1,17 @@
 GIT
-  remote: https://github.com/riptano/ruby-driver
-  revision: 85fa33de53e2f6e153799c1d6e77ae9139223279
-  branch: datastax-api
+  remote: https://github.com/datastax/ruby-driver.git
+  revision: 4aa72e59f378b02c10150963d2c73a521e5fd35a
   specs:
-    cql-rb (2.0.3)
-      ione (= 1.0.0)
+    cassandra-driver (1.0.0.beta.2)
+      ione (~> 1.2.0.pre4)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    ione (1.0.0)
+    ione (1.2.0.pre4)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  cql-rb!
+  cassandra-driver!
