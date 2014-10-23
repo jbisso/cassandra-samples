@@ -1,7 +1,10 @@
+#include <iostream>
+
 #include "SimpleClient.hpp"
 #include "BoundStatementsClient.hpp"
 
-#include <cql/cql_execute.hpp>
+
+using namespace std;
 
 namespace example
 {
@@ -12,54 +15,113 @@ const std::string ARTIST_COLUMN("artist");
 const std::string ALBUM_COLUMN("album");
 
 using namespace std;
-using namespace cql;
-using boost::shared_ptr;
 
-void BoundStatementsClient::loadData()
+CassError BoundStatementsClient::loadData()
 {
-    boost::shared_ptr<cql::cql_query_t> unbound_select(
-        new cql::cql_query_t(
-            string("INSERT INTO songs ") +
-            "(id, title, album, artist) " +
-            "VALUES (?, ?, ?, ?);"
-            ));
-    // compile the parametrized query on the server
-    boost::shared_future<cql::cql_future_result_t> future = getSession()->prepare(unbound_select);
-    future.wait();
-    // read the hash (ID) returned by Cassandra as identificator of prepared query
-    std::vector<cql::cql_byte_t> queryId = future.get().result->query_id();
-    boost::shared_ptr<cql::cql_execute_t> bound(
-        new cql::cql_execute_t(queryId, cql::CQL_CONSISTENCY_ONE));
-    // bind the query with concrete parameter: "system_auth"
-    bound->push_back("756716f7-2e54-4715-9f00-91dcbea6cf50");
-    bound->push_back("La Petite Tonkinoise'");
-    bound->push_back("Bye Bye Blackbird'");
-    bound->push_back("Joséphine Baker");
-    // send the concrete (bound) query
-    future = getSession()->execute(bound);
-    future.wait();
-    cout << "Querying the simplex.playlists table." << endl;
-    shared_ptr<cql::cql_query_t> query_playlists_statement(new cql::cql_query_t(
-        string("SELECT * FROM simplex.songs;")
-        ));
-    future = getSession()->query(query_playlists_statement);
-    std::cout << "Was the query successful? " << (!future.get().error.is_err() ? "Yes." : "No.") << endl;
-    shared_ptr<cql::cql_result_t> result = future.get().result;
-    cout << TITLE_COLUMN << "\t" << ALBUM_COLUMN << "\t" << ARTIST_COLUMN << endl;
-    if ( result ) 
-    {
-        while ( result->next() ) 
-        {
-            string title, artist, album;
-            result->get_string(TITLE_COLUMN, title);
-            result->get_string(ALBUM_COLUMN, artist);
-            result->get_string(ARTIST_COLUMN, album);
-            cout << title << "\t" << album << "\t" << artist << endl;
-        }
-    }
+    CassError rc = CASS_OK;
+    
+    cout << "Loading data into simplex keyspace." << endl;
+    
+    // prepare the statements
+    prepareStatement( "INSERT INTO simplex.songs (id, title, album, artist) VALUES (?, ?, ?, ?);", &preparedInsertSong );
+    prepareStatement( "INSERT INTO simplex.playlists (id, song_id, title, album, artist) VALUES (?, ?, ?, ?, ?);", &preparedInsertPlaylist );
+    
+    CassUuid songId;
+    CassUuid playlistId;
+    
+    cass_uuid_generate_random(songId);
+    cass_uuid_generate_random(playlistId);
+    insertSong(songId, "La Petite Tonkinoise", "Bye Bye Blackbird", "Joséphine Baker");
+    insertPlaylist(playlistId, songId, "La Petite Tonkinoise", "Bye Bye Blackbird", "Joséphine Baker");
+    cass_uuid_generate_random(songId);
+    cass_uuid_generate_random(playlistId);
+    insertSong(songId, "Die Mösch", "In Gold", "Willi Ostermann");
+    insertPlaylist(playlistId, songId, "Die Mösch", "In Gold", "Willi Ostermann");
+    cass_uuid_generate_random(songId);
+    cass_uuid_generate_random(playlistId);
+    insertSong(songId, "Memo From Turner", "Performance", "Mick Jager");
+    insertPlaylist(playlistId, songId, "Memo From Turner", "Performance", "Mick Jager");
+    
+    return rc;
 }
 
-BoundStatementsClient::BoundStatementsClient() { }
+BoundStatementsClient::BoundStatementsClient()
+{
+    preparedInsertSong = NULL;
+    preparedInsertPlaylist = NULL;
+}
+
+// private functions
+
+CassError BoundStatementsClient::prepareStatement(const char* query, const CassPrepared** prepared)
+{
+    CassError rc = CASS_OK;
+    cout << "Preparing statement." << endl;
+    
+    CassFuture* future = cass_session_prepare(getSession(), cass_string_init(query));
+    cass_future_wait(future);
+    rc = cass_future_error_code(future);
+    if ( rc != CASS_OK ) {
+        cout << "Error preparing insert statement." << endl;
+    } else {
+        *prepared = cass_future_get_prepared(future);
+    }
+    cass_future_free(future);
+    return rc;
+}
+
+CassError BoundStatementsClient::insertSong(CassUuid songId, const char* title, const char* album, const char* artist)
+{
+    CassError rc = CASS_OK;
+    cout << "Inserting song " << title << "." << endl;
+    
+    CassStatement* statement = cass_prepared_bind(preparedInsertSong);
+    CassFuture* future = NULL;
+    
+    cass_statement_bind_uuid(statement, 0, songId);
+    cass_statement_bind_string(statement, 1, cass_string_init(title));
+    cass_statement_bind_string(statement, 2, cass_string_init(album));
+    cass_statement_bind_string(statement, 3, cass_string_init(artist));
+    
+    future = cass_session_execute(getSession(), statement);
+    cass_future_wait(future);
+    rc = cass_future_error_code(future);
+    if (rc != CASS_OK) {
+        cout << "Error inserting row." << endl;
+    }
+    
+    cass_future_free(future);
+    cass_statement_free(statement);
+    
+    return rc;
+}
+
+CassError BoundStatementsClient::insertPlaylist(CassUuid playlistId, CassUuid songId, const char* title, const char* album, const char* artist)
+{
+    CassError rc = CASS_OK;
+    cout << "Inserting playlist " << title << "." << endl;
+    
+    CassStatement* statement = cass_prepared_bind(preparedInsertPlaylist);
+    CassFuture* future = NULL;
+    
+    cass_statement_bind_uuid(statement, 0, playlistId);
+    cass_statement_bind_uuid(statement, 1, songId);
+    cass_statement_bind_string(statement, 2, cass_string_init(title));
+    cass_statement_bind_string(statement, 3, cass_string_init(album));
+    cass_statement_bind_string(statement, 4, cass_string_init(artist));
+    
+    future = cass_session_execute(getSession(), statement);
+    cass_future_wait(future);
+    rc = cass_future_error_code(future);
+    if (rc != CASS_OK) {
+        cout << "Error inserting song." << endl;
+    }
+    
+    cass_future_free(future);
+    cass_statement_free(statement);
+    
+    return rc;
+}
 
 } // end namespace example
 
@@ -73,7 +135,7 @@ BoundStatementsClient::BoundStatementsClient() { }
             UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
             "La Petite Tonkinoise'",
             "Bye Bye Blackbird'",
-            "Jos�phine Baker",
+            "Joséphine Baker",
             tags ) );
 
 */

@@ -1,13 +1,22 @@
 OBJS = simple.o bound.o SimpleClient.o BoundStatementsClient.o
+
 CC = g++
+DRIVER_DIR = /Users/jimbisso/work/repos/datastax/cpp-driver
+
 DEBUG = -g
-CFLAGS = -Wall -c $(DEBUG) -std=c++11
+CPPFLAGS = -Wall -c $(DEBUG) -I$(DRIVER_DIR)/include
 LFLAGS = -Wall $(DEBUG)
 
-all : demo
+LIBS = -L$(DRIVER_DIR) -luv -lssh2 -lcassandra
 
-demo : demo.o
-	$(CC) $(LFLAGS) demo.o -o demo -llibuv -llibssh2 -llibcassandra.0.7.0.dylib
+all: simple bound
 
-clean : 
-	rm $(OBJS) demo
+simple: SimpleClient.o simple.o
+	$(CC) $(LFLAGS) -o simple SimpleClient.o simple.o $(LIBS)
+
+bound: bound.o BoundStatementsClient.o
+	$(CC) $(LFLAGS) -o bound bound.o SimpleClient.o BoundStatementsClient.o $(LIBS)
+
+clean:
+	rm $(OBJS) simple bound
+
