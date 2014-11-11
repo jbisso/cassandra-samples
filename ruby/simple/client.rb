@@ -4,7 +4,7 @@ require_relative 'cassandraExamples'
 
 client = CassandraExamples::SimpleClient.new()
 # client = CassandraExamples::BoundStatementsClient.new()
-client.connect('127.0.0.1')
+client.connect(['127.0.0.1'])
 client.createSchema()
 client.loadData()
 client.querySchema()

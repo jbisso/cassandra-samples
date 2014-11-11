@@ -12,7 +12,7 @@ module CassandraExamples
         
         def connect(node)
             puts "Connecting to cluster."
-            @cluster = Cassandra.connect(node)
+            @cluster = Cassandra.connect(hosts: node)
             @cluster.hosts.each do |host|
               puts "Host #{host.ip}: id=#{host.id} datacenter=#{host.datacenter} rack=#{host.rack}"
             end
