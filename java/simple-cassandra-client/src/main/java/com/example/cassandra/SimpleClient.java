@@ -39,11 +39,11 @@ public class SimpleClient {
     */
    public void createSchema() {
       session.execute(
-            "CREATE KEYSPACE simplex WITH replication " + 
+            "CREATE KEYSPACE IF NOT EXISTS simplex WITH replication " + 
             "= {'class' : 'SimpleStrategy', 'replication_factor' : 3};");
       // create songs and playlist tables
       session.execute(
-            "CREATE TABLE simplex.songs (" +
+            "CREATE TABLE IF NOT EXISTS simplex.songs (" +
                   "id uuid PRIMARY KEY," + 
                   "title text," + 
                   "album text," + 
@@ -52,7 +52,7 @@ public class SimpleClient {
                   "data blob" + 
               ");");
       session.execute(
-            "CREATE TABLE simplex.playlists (" +
+            "CREATE TABLE IF NOT EXISTS simplex.playlists (" +
                   "id uuid," +
                   "title text," +
                   "album text, " + 

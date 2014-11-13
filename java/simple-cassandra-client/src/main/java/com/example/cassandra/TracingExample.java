@@ -1,3 +1,4 @@
+
 package com.example.cassandra;
 
 import java.text.SimpleDateFormat;
@@ -31,7 +32,6 @@ public class TracingExample extends SimpleClient {
             .value("album", "La Folie")
             .value("artist", "The Stranglers")
             .setConsistencyLevel(ConsistencyLevel.ONE).enableTracing();
-      // 
       ResultSet results = getSession().execute(insert);
       ExecutionInfo executionInfo = results.getExecutionInfo();
       System.out.printf( "Host (queried): %s\n", executionInfo.getQueriedHost().toString() );
@@ -79,7 +79,6 @@ public class TracingExample extends SimpleClient {
       client.createSchema();
       client.traceInsert();
       client.traceSelect();
-      client.dropSchema("simplex");
       client.close();
    }
 }
