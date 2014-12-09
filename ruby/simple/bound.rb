@@ -15,21 +15,21 @@ module CassandraExamples
                     :title  => 'La Petite Tonkinoise',
                     :album  => 'Bye Bye Blackbird',
                     :artist => 'Joséphine Baker',
-                    :tags => ['jazz', '2013'].to_set)
+                    :tags => ['jazz', '2013'].to_set
                 },
                 {
                     :id     => Cassandra::Uuid.new('f6071e72-48ec-4fcb-bf3e-379c8a696488'),
                     :title  => 'Die Mösch',
                     :album  => 'In Gold',
                     :artist => 'Willi Ostermann',
-                    :tags => ['kölsch', '1996', 'birds'].to_set)
+                    :tags => ['kölsch', '1996', 'birds'].to_set
                 },
                 {
                     :id     => Cassandra::Uuid.new('fbdf82ed-0063-4796-9c7c-a3d4f47b4b25'),
                     :title  => 'Memo From Turner',
                     :album  => 'Performance',
                     :artist => 'Mick Jager',
-                    :tags => ['soundtrack', '1991'].to_set)
+                    :tags => ['soundtrack', '1991'].to_set
                 }
             ]
             @playlistsData = [
@@ -57,7 +57,7 @@ module CassandraExamples
             ]
         end
         
-        def prepareStatements()
+        def prepare_statements()
             @insertSongStatement = @session.prepare(
                 "INSERT INTO simplex.songs " +
                     "(id, title, album, artist, tags) " +
@@ -68,7 +68,7 @@ module CassandraExamples
                     "VALUES (?, ?, ?, ?, ?);")
         end
         
-        def loadData()
+        def load_data()
             @songsData.each do |song|
                 @session.execute(@insertSongStatement, song[:id], song[:title], song[:artist], song[:album], song[:tags])
             end

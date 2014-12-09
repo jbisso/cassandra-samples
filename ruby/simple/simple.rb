@@ -13,13 +13,13 @@ module CassandraExamples
         def connect(node)
             puts "Connecting to cluster."
             @cluster = Cassandra.connect(hosts: node)
-            @cluster.hosts.each do |host|
+            @cluster.each_host do |host|
               puts "Host #{host.ip}: id=#{host.id} datacenter=#{host.datacenter} rack=#{host.rack}"
             end
-            @session = @cluster.connect()
+            @session = @cluster.connect
         end
         
-        def createSchema()
+        def create_schema()
             @session.execute("CREATE KEYSPACE simplex WITH replication " + 
                 "= {'class':'SimpleStrategy', 'replication_factor':3};")
             @session.execute("CREATE TABLE simplex.songs (" +
@@ -41,7 +41,7 @@ module CassandraExamples
             puts "Simplex keyspace and schema created."
         end
         
-        def loadData()
+        def load_data()
             @session.execute(
                 "INSERT INTO simplex.songs (id, title, album, artist, tags) " +
                 "VALUES (" +
@@ -99,7 +99,7 @@ module CassandraExamples
             puts "Data loaded."
         end
         
-        def querySchema()
+        def query_schema()
             results = @session.execute(
                 "SELECT * FROM simplex.playlists " +
                 "WHERE id = 2cc9ccb7-6221-4ccb-8387-f22b6a1b354d;")
@@ -110,7 +110,7 @@ module CassandraExamples
             end
         end
         
-        def updateSchema()
+        def update_schema()
             @session.execute(
                 "UPDATE simplex.songs " +
                 "SET tags = tags + { 'entre-deux-guerres' } " +
@@ -125,7 +125,7 @@ module CassandraExamples
             end
         end
         
-        def dropSchema(keyspace)
+        def drop_schema(keyspace)
             @session.execute("DROP KEYSPACE " + keyspace + ";")
             puts keyspace + " keyspace dropped."
         end
@@ -136,7 +136,7 @@ module CassandraExamples
         end
     
         def close()
-            @cluster.close()
+            @cluster.close
         end
     end
 end
