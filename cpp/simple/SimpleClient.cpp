@@ -55,24 +55,30 @@ CassError SimpleClient::connect(const string nodes)
     CassError rc = CASS_OK;
     cout << "Connecting to " << nodes << "\n";
     cluster = cass_cluster_new();
-    CassFuture* session_future = NULL;
+    session = cass_session_new();
+    CassFuture* connect_future = NULL;
     
     cass_cluster_set_contact_points(cluster, "127.0.0.1");
 
-    session_future = cass_cluster_connect(cluster);
-    cass_future_wait(session_future);
-    rc = cass_future_error_code(session_future);
+    connect_future = cass_session_connect(session, cluster);
+    
+    cass_future_wait(connect_future);
+    rc = cass_future_error_code(connect_future);
 
     if ( rc == CASS_OK )
     {
         cout << "Connected." << "\n";
+        CassSchema* schemaMetadata = cass_session_get_schema(sssion);
+        CassIterator* iter = cass_iterator_from_schema(schemaMetadata);
+        
+        cass_iterator_free(iter);
+        cass_schema_free(schemaMetadata);
     }
     else
     {
         return printError(rc);
     }
-    
-    session = cass_future_get_session(session_future);
+    cass_future_free(connect_future);
     return rc;
 }
 
@@ -195,7 +201,6 @@ CassError SimpleClient::dropSchema(const std::string keyspace)
 {
     CassError rc = CASS_OK;
     CassFuture* result_future = NULL;
-    //const char* queryString = "DROP KEYSPACE " + keyspace + ";";
     cout << "Dropping " + keyspace + "" << "\n";
     CassString query = cass_string_init("DROP KEYSPACE simplex;");
     CassStatement* statement = cass_statement_new(query, 0);

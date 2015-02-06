@@ -29,16 +29,16 @@ CassError BoundStatementsClient::loadData()
     CassUuid songId;
     CassUuid playlistId;
     
-    cass_uuid_generate_random(songId);
-    cass_uuid_generate_random(playlistId);
+    cass_uuid_from_string("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d", &playlistId);
+    cass_uuid_from_string("756716f7-2e54-4715-9f00-91dcbea6cf50", &songId);
     insertSong(songId, "La Petite Tonkinoise", "Bye Bye Blackbird", "Joséphine Baker");
     insertPlaylist(playlistId, songId, "La Petite Tonkinoise", "Bye Bye Blackbird", "Joséphine Baker");
-    cass_uuid_generate_random(songId);
-    cass_uuid_generate_random(playlistId);
+    cass_uuid_from_string("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d", &playlistId);
+    cass_uuid_from_string("f6071e72-48ec-4fcb-bf3e-379c8a696488", &songId);
     insertSong(songId, "Die Mösch", "In Gold", "Willi Ostermann");
     insertPlaylist(playlistId, songId, "Die Mösch", "In Gold", "Willi Ostermann");
-    cass_uuid_generate_random(songId);
-    cass_uuid_generate_random(playlistId);
+    cass_uuid_from_string("2cc9ccb7-6221-4ccb-8387-f22b6a1b354d", &playlistId);
+    cass_uuid_from_string("fbdf82ed-0063-4796-9c7c-a3d4f47b4b25", &songId);
     insertSong(songId, "Memo From Turner", "Performance", "Mick Jager");
     insertPlaylist(playlistId, songId, "Memo From Turner", "Performance", "Mick Jager");
     
@@ -125,18 +125,4 @@ CassError BoundStatementsClient::insertPlaylist(CassUuid playlistId, CassUuid so
 
 } // end namespace example
 
-/*
-
-      BoundStatement boundStatement = new BoundStatement(statement);
-      Set<String> tags = new HashSet<String>();
-      tags.add("jazz");
-      tags.add("2013");
-      getSession().execute(boundStatement.bind(
-            UUID.fromString("756716f7-2e54-4715-9f00-91dcbea6cf50"),
-            "La Petite Tonkinoise'",
-            "Bye Bye Blackbird'",
-            "Joséphine Baker",
-            tags ) );
-
-*/
 
